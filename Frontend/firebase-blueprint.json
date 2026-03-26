@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "products": {
+      "title": "Product",
+      "description": "Store product information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "colors": { "type": "array", "items": { "type": "string" } },
+        "sizes": { "type": "array", "items": { "type": "string" } },
+        "stock": { "type": "integer" },
+        "isNew": { "type": "boolean" },
+        "isSale": { "type": "boolean" },
+        "salePrice": { "type": "number" }
+      },
+      "required": ["id", "name", "slug", "price", "category"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "users",
+      "description": "Collection of user profiles"
+    },
+    "products": {
+      "schema": "products",
+      "description": "Collection of store products"
+    }
+  }
+}
