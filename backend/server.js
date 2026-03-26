@@ -1,14 +1,10 @@
 require('dotenv').config();
 const fastify = require('fastify')({ logger: true });
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
 const cors = require('@fastify/cors');
 const fastifyJwt = require('fastify-jwt');
 
-const User = require('./models/User');
-const Product = require('./models/Product');
-const Order = require('./models/Order');
 const Contact = require('./models/Contact');
 
 const PORT = process.env.PORT || 4000;
@@ -34,125 +30,13 @@ async function start() {
             }
         });
 
-        // --- Auth ---
-        fastify.post('/api/signup', async(request, reply) => {
-            const { name, email, mobile, password } = request.body || {};
-            if (!name || !email || !password) return reply.status(400).send({ message: 'Missing fields' });
-            const existing = await User.findOne({ email: email.toLowerCase() });
-            if (existing) return reply.status(400).send({ message: 'Email already in use' });
-            const hashed = await bcrypt.hash(password, 10);
-            const user = new User({ name, email: email.toLowerCase(), mobile, password: hashed });
-            await user.save();
-            const token = fastify.jwt.sign({ id: user._id, email: user.email });
-            const safeUser = { id: user._id, name: user.name, email: user.email, mobile: user.mobile };
-            return reply.send({ user: safeUser, token });
-        });
+        // Register Routes
+        await fastify.register(require('./routes/authRoutes'), { prefix: '/api' });
+        await fastify.register(require('./routes/productRoutes'), { prefix: '/api/products' });
+        await fastify.register(require('./routes/userRoutes'), { prefix: '/api/users' });
+        await fastify.register(require('./routes/orderRoutes'), { prefix: '/api/orders' });
 
-        fastify.post('/api/login', async(request, reply) => {
-            const { email, password } = request.body || {};
-            if (!email || !password) return reply.status(400).send({ message: 'Missing credentials' });
-            const user = await User.findOne({ email: email.toLowerCase() });
-            if (!user) return reply.status(401).send({ message: 'Invalid email or password' });
-            const match = await bcrypt.compare(password, user.password);
-            if (!match) return reply.status(401).send({ message: 'Invalid email or password' });
-            const token = fastify.jwt.sign({ id: user._id, email: user.email });
-            const safeUser = { id: user._id, name: user.name, email: user.email, mobile: user.mobile };
-            return reply.send({ user: safeUser, token });
-        });
-
-        // --- Products ---
-        fastify.get('/api/products', async(request, reply) => {
-            const { search } = request.query;
-            const q = {};
-            if (search) q.$or = [{ name: new RegExp(search, 'i') }, { slug: new RegExp(search, 'i') }, { description: new RegExp(search, 'i') }];
-            const products = await Product.find(q).lean();
-            return reply.send(products);
-        });
-
-        fastify.get('/api/products/:id', async(request, reply) => {
-            const product = await Product.findById(request.params.id).lean();
-            if (!product) return reply.status(404).send({ message: 'Product not found' });
-            return reply.send(product);
-        });
-
-        fastify.post('/api/products', { preHandler: [fastify.authenticate] }, async(request, reply) => {
-            const payload = request.body || {};
-            if (!payload.name || !payload.slug) return reply.status(400).send({ message: 'Missing required fields: name or slug' });
-            const product = new Product(payload);
-            await product.save();
-            return reply.status(201).send(product);
-        });
-
-        fastify.put('/api/products/:id', { preHandler: [fastify.authenticate] }, async(request, reply) => {
-            const payload = request.body || {};
-            const product = await Product.findByIdAndUpdate(request.params.id, payload, { new: true });
-            if (!product) return reply.status(404).send({ message: 'Product not found' });
-            return reply.send(product);
-        });
-
-        fastify.delete('/api/products/:id', { preHandler: [fastify.authenticate] }, async(request, reply) => {
-            const res = await Product.findByIdAndDelete(request.params.id);
-            if (!res) return reply.status(404).send({ message: 'Product not found' });
-            return reply.status(204).send();
-        });
-
-        // --- Users ---
-        fastify.get('/api/users', { preHandler: [fastify.authenticate] }, async(request, reply) => {
-            const users = await User.find().select('-password').lean();
-            return reply.send(users);
-        });
-
-        fastify.get('/api/users/:id', async(request, reply) => {
-            const user = await User.findById(request.params.id).select('-password').lean();
-            if (!user) return reply.status(404).send({ message: 'User not found' });
-            return reply.send(user);
-        });
-
-        fastify.post('/api/users/:id/address', async(request, reply) => {
-            const { id } = request.params;
-            const addr = request.body || {};
-            if (!addr.line1 || !addr.city || !addr.postalCode) return reply.status(400).send({ message: 'Address requires line1, city, postalCode' });
-            const user = await User.findById(id);
-            if (!user) return reply.status(404).send({ message: 'User not found' });
-            user.addresses = user.addresses || [];
-            user.addresses.push({...addr, createdAt: new Date() });
-            await user.save();
-            return reply.status(201).send(user.addresses[user.addresses.length - 1]);
-        });
-
-        // --- Orders ---
-        fastify.get('/api/orders', async(request, reply) => {
-            const { userId } = request.query;
-            const filter = userId ? { userId } : {};
-            const orders = await Order.find(filter).lean();
-            return reply.send(orders);
-        });
-
-        fastify.get('/api/orders/:id', async(request, reply) => {
-            const order = await Order.findById(request.params.id).lean();
-            if (!order) return reply.status(404).send({ message: 'Order not found' });
-            return reply.send(order);
-        });
-
-        fastify.post('/api/orders', async(request, reply) => {
-            const { userId, items, shippingAddress, paymentMethod, total } = request.body || {};
-            if (!userId || !Array.isArray(items) || items.length === 0 || !shippingAddress) return reply.status(400).send({ message: 'Missing required fields' });
-            const order = new Order({ userId, items, shippingAddress, paymentMethod: paymentMethod || 'unknown', total: total || 0, status: 'created' });
-            await order.save();
-            return reply.status(201).send(order);
-        });
-
-        fastify.post('/api/orders/:id/cancel', async(request, reply) => {
-            const order = await Order.findById(request.params.id);
-            if (!order) return reply.status(404).send({ message: 'Order not found' });
-            if (order.status === 'cancelled') return reply.status(400).send({ message: 'Order already cancelled' });
-            order.status = 'cancelled';
-            order.cancelledAt = new Date();
-            await order.save();
-            return reply.send(order);
-        });
-
-        // --- Pages & Contact ---
+        // --- Static Pages & Contact ---
         fastify.get('/api/pages/about', async(request, reply) => {
             return {
                 eyebrow: 'Our Story',
