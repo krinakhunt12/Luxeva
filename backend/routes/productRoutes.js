@@ -1,11 +1,12 @@
-const productController = require('../controllers/productController');
+const express = require('express');
+const router = express.Router();
+const productController = require('../features/products/productController');
+const { authenticate } = require('../utils/authMiddleware');
 
-async function productRoutes(fastify, options) {
-    fastify.get('/', productController.getProducts);
-    fastify.get('/:id', productController.getProductById);
-    fastify.post('/', { preHandler: [fastify.authenticate] }, productController.createProduct);
-    fastify.put('/:id', { preHandler: [fastify.authenticate] }, productController.updateProduct);
-    fastify.delete('/:id', { preHandler: [fastify.authenticate] }, productController.deleteProduct);
-}
+router.get('/', productController.getProducts);
+router.get('/:id', productController.getProductById);
+router.post('/', authenticate, productController.createProduct);
+router.put('/:id', authenticate, productController.updateProduct);
+router.delete('/:id', authenticate, productController.deleteProduct);
 
-module.exports = productRoutes;
+module.exports = router;

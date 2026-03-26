@@ -9,9 +9,9 @@ import { Cart, Wishlist } from './pages/CartWishlist';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import { Search } from './pages/StaticPages';
-import { Login, SignUp } from './pages/Auth';
+import { Login, SignUp } from './features/auth/Auth';
 import { Account } from './pages/Account';
-import { Admin } from './pages/Admin';
+import { Admin } from './features/admin/Admin';
 
 export default function App() {
   const location = useLocation();

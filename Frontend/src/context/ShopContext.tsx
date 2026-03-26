@@ -90,6 +90,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAdmin(false);
   };
 
+  const removeFromCart = (id: string, color: string, size: string) => {
+    setCart(prev => prev.filter(item => !(item.id === id && item.selectedColor === color && item.selectedSize === size)));
+  };
+
   const updateCartQuantity = (id: string, color: string, size: string, quantity: number) => {
     if (quantity < 1) return;
     setCart(prev => prev.map(item => 
@@ -113,14 +117,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
-
-  const logout = async () => {
-    try {
-      await auth.signOut();
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
 
   return (
     <ShopContext.Provider value={{
