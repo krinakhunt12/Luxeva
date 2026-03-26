@@ -15,7 +15,7 @@ const sendMessage = async (payload: any) => {
 
 export default function Contact() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', subject: 'General Inquiry', message: '' });
-  const mutation = useMutation(sendMessage);
+  const mutation = useMutation({ mutationFn: sendMessage });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

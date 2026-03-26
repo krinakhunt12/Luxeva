@@ -8,5 +8,5 @@ export const useCurrentUser = () => {
 
 export const useUpdateUser = () => {
   const qc = useQueryClient();
-  return useMutation((payload: Partial<User>) => api.updateUser(payload), { onSuccess: () => qc.invalidateQueries(['me']) });
+  return useMutation({ mutationFn: (payload: Partial<User>) => api.updateUser(payload), onSuccess: () => qc.invalidateQueries({ queryKey: ['me'] }) });
 };

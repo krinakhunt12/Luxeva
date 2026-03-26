@@ -11,10 +11,33 @@ import Contact from './pages/Contact';
 import { Search } from './pages/StaticPages';
 import { Login, SignUp } from './features/auth/Auth';
 import { Account } from './pages/Account';
-import { Admin } from './features/admin/Admin';
+
+// Admin Imports
+import AdminLayout from './features/admin/layout/AdminLayout';
+import AdminDashboard from './features/admin/pages/Dashboard';
+import ProductsPage from './features/products/pages/ProductsPage';
+import UsersManagement from './features/admin/pages/UsersPage';
+import OrdersManagement from './features/admin/pages/OrdersPage';
+import AddProduct from './features/admin/pages/AddProduct';
 
 export default function App() {
   const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  if (isAdminRoute) {
+    return (
+      <Routes>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="users" element={<UsersManagement />} />
+          <Route path="orders" element={<OrdersManagement />} />
+          <Route path="add-product" element={<AddProduct />} />
+        </Route>
+      </Routes>
+    );
+  }
 
   return (
     <Layout>
@@ -33,7 +56,6 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/account" element={<Account />} />
-            <Route path="/admin" element={<Admin />} />
           </Routes>
         </div>
       </AnimatePresence>

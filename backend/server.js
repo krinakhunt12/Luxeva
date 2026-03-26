@@ -11,7 +11,8 @@ const orderRoutes = require('./routes/orderRoutes');
 const Contact = require('./models/Contact');
 
 const PORT = process.env.PORT || 4000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/luxeva';
+// Ensure database name is `Luxeva` by default. You can override with MONGO_URI in your environment.
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/Luxeva';
 
 const app = express();
 app.use(cors());

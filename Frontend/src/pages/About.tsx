@@ -8,7 +8,7 @@ const fetchAbout = async () => {
 };
 
 export default function About() {
-  const { data, isLoading, error } = useQuery(['aboutPage'], fetchAbout);
+  const { data, isLoading, error } = useQuery({ queryKey: ['aboutPage'], queryFn: fetchAbout });
 
   if (isLoading) return <div className="pt-40 text-center">Loading...</div>;
   if (error) return <div className="pt-40 text-center">Failed to load content.</div>;

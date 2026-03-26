@@ -1,19 +1,22 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
-import * as api from '../api/productsApi';
-import { Product } from '../types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getProducts, createProduct, updateProduct, deleteProduct } from '../api/productsApi';
+import { Product } from '../../../../types';
 
-export const useProducts = () => {
-  return useQuery<Product[]>(['products'], api.fetchProducts);
-};
+export function useProducts() {
+  return useQuery({ queryKey: ['products'], queryFn: getProducts }) as ReturnType<typeof useQuery>;
+}
 
-export const useCreateProduct = () => {
-  return useMutation((payload: Partial<Product>) => api.createProduct(payload));
-};
+export function useCreateProduct() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: createProduct, onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] }) });
+}
 
-export const useUpdateProduct = (id: string) => {
-  return useMutation((payload: Partial<Product>) => api.updateProduct(id, payload));
-};
+export function useUpdateProduct() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: ({ id, payload }: { id: string; payload: Partial<Product> }) => updateProduct(id, payload), onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] }) });
+}
 
-export const useDeleteProduct = () => {
-  return useMutation((id: string) => api.deleteProduct(id));
-};
+export function useDeleteProduct() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (id: string) => deleteProduct(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] }) });
+}

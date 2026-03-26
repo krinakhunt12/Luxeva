@@ -20,16 +20,17 @@ export const Admin = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'users'>('dashboard');
 
-  const { data: products = [], isLoading: prodsLoading } = useQuery(['products'], fetchProducts);
-  const { data: users = [], isLoading: usersLoading } = useQuery(['users'], fetchUsers);
+  const { data: products = [], isLoading: prodsLoading } = useQuery({ queryKey: ['products'], queryFn: fetchProducts });
+  const { data: users = [], isLoading: usersLoading } = useQuery({ queryKey: ['users'], queryFn: fetchUsers });
 
   // Example mutation to create product (requires auth token on backend)
-  const createProduct = useMutation(async (payload: Partial<Product>) => {
-    const res = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    if (!res.ok) throw new Error('Create failed');
-    return res.json();
-  }, {
-    onSuccess: () => queryClient.invalidateQueries(['products'])
+  const createProduct = useMutation({
+    mutationFn: async (payload: Partial<Product>) => {
+      const res = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!res.ok) throw new Error('Create failed');
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   });
 
   return (

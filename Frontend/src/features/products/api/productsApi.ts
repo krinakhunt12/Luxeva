@@ -1,24 +1,27 @@
-import { Product } from '../types';
+import { Product } from '../../../../types';
 
-export const fetchProducts = async (): Promise<Product[]> => {
-  const res = await fetch('/api/products');
+const base = '/api/products';
+
+export async function getProducts(): Promise<Product[]> {
+  const res = await fetch(base);
   if (!res.ok) throw new Error('Failed to fetch products');
   return res.json();
-};
+}
 
-export const createProduct = async (payload: Partial<Product>): Promise<Product> => {
-  const res = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-  if (!res.ok) throw new Error('Failed to create');
+export async function createProduct(payload: Partial<Product>): Promise<Product> {
+  const res = await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  if (!res.ok) throw new Error('Create failed');
   return res.json();
-};
+}
 
-export const updateProduct = async (id: string, payload: Partial<Product>): Promise<Product> => {
-  const res = await fetch(`/api/products/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-  if (!res.ok) throw new Error('Failed to update');
+export async function updateProduct(id: string, payload: Partial<Product>): Promise<Product> {
+  const res = await fetch(`${base}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  if (!res.ok) throw new Error('Update failed');
   return res.json();
-};
+}
 
-export const deleteProduct = async (id: string): Promise<void> => {
-  const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+export async function deleteProduct(id: string): Promise<void> {
+  const res = await fetch(`${base}/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error('Delete failed');
-};
+}
+

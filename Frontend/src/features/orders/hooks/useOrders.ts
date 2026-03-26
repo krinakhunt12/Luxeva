@@ -8,5 +8,5 @@ export const useOrders = () => {
 
 export const useCreateOrder = () => {
   const qc = useQueryClient();
-  return useMutation((payload: Partial<Order>) => api.createOrder(payload), { onSuccess: () => qc.invalidateQueries(['orders']) });
+  return useMutation({ mutationFn: (payload: Partial<Order>) => api.createOrder(payload), onSuccess: () => qc.invalidateQueries({ queryKey: ['orders'] }) });
 };

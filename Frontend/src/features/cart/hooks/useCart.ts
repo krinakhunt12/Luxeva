@@ -8,10 +8,10 @@ export const useCart = () => {
 
 export const useAddToCart = () => {
   const qc = useQueryClient();
-  return useMutation((item: CartItem) => api.addToCart(item), { onSuccess: () => qc.invalidateQueries(['cart']) });
+  return useMutation({ mutationFn: (item: CartItem) => api.addToCart(item), onSuccess: () => qc.invalidateQueries({ queryKey: ['cart'] }) });
 };
 
 export const useRemoveFromCart = () => {
   const qc = useQueryClient();
-  return useMutation((id: string) => api.removeFromCart(id), { onSuccess: () => qc.invalidateQueries(['cart']) });
+  return useMutation({ mutationFn: (id: string) => api.removeFromCart(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['cart'] }) });
 };
