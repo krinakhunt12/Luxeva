@@ -1,8 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, CartItem } from '../types';
-import { auth, db } from '../firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { Product, CartItem, User } from '../types';
 
 interface ShopContextType {
   cart: CartItem[];
@@ -10,7 +7,7 @@ interface ShopContextType {
   user: User | null;
   isAdmin: boolean;
   loading: boolean;
-  logout: () => Promise<void>;
+  logout: () => void;
   addToCart: (product: Product, color: string, size: string, quantity: number) => void;
   removeFromCart: (id: string, color: string, size: string) => void;
   updateCartQuantity: (id: string, color: string, size: string, quantity: number) => void;
@@ -25,9 +22,14 @@ interface ShopContextType {
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('luxeva_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return user?.email === 'khuntkrina7@gmail.com'; // Basic bypass for now, or check backend role
+  });
+  const [loading, setLoading] = useState(false);
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('luxeva_cart');
     return saved ? JSON.parse(saved) : [];
@@ -41,28 +43,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        // Fetch user role from Firestore
-        try {
-          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            setIsAdmin(userData.role === 'admin' || currentUser.email === 'khuntkrina7@gmail.com');
-          } else {
-            setIsAdmin(currentUser.email === 'khuntkrina7@gmail.com');
-          }
-        } catch (error) {
-          console.error('Error fetching user role:', error);
-          setIsAdmin(currentUser.email === 'khuntkrina7@gmail.com');
-        }
-      } else {
-        setIsAdmin(false);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    // Listen for local storage changes (login/logout from other tabs or same tab)
+    const handleStorage = () => {
+      const savedUser = localStorage.getItem('luxeva_user');
+      const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+      setUser(parsedUser);
+      setIsAdmin(parsedUser?.email === 'khuntkrina7@gmail.com');
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   useEffect(() => {
@@ -94,10 +83,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (id: string, color: string, size: string) => {
-    setCart(prev => prev.filter(item => 
-      !(item.id === id && item.selectedColor === color && item.selectedSize === size)
-    ));
+  const logout = () => {
+    localStorage.removeItem('luxeva_user');
+    localStorage.removeItem('luxeva_token');
+    setUser(null);
+    setIsAdmin(false);
   };
 
   const updateCartQuantity = (id: string, color: string, size: string, quantity: number) => {

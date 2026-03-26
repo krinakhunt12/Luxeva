@@ -14,16 +14,6 @@ import {
   Loader2,
   Search
 } from 'lucide-react';
-import { db } from '../firebase';
-import { 
-  collection, 
-  onSnapshot, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  serverTimestamp 
-} from 'firebase/firestore';
 import { Product, User } from '../types';
 
 // Sub-components for Admin Panel
