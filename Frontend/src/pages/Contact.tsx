@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { showSuccess, showError } from '../utils/toastService';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 
@@ -15,7 +16,7 @@ const sendMessage = async (payload: any) => {
 
 export default function Contact() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', subject: 'General Inquiry', message: '' });
-  const mutation = useMutation({ mutationFn: sendMessage });
+  const { mutate, isLoading, isError, isSuccess } = useMutation({ mutationFn: sendMessage, onSuccess: () => showSuccess('Message sent'), onError: (err: any) => showError(err?.message || 'Send failed') });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -55,8 +56,8 @@ export default function Contact() {
               </div>
               <Input name="email" label="Email Address" type="email" value={form.email} onChange={handleChange} />
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold">Subject</label>
-                <select name="subject" value={form.subject} onChange={handleChange} className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors">
+                <label htmlFor="subject" className="text-[10px] uppercase tracking-widest font-bold">Subject</label>
+                <select id="subject" name="subject" value={form.subject} onChange={handleChange} className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors">
                   <option>General Inquiry</option>
                   <option>Order Support</option>
                   <option>Returns & Exchanges</option>
@@ -68,10 +69,10 @@ export default function Contact() {
                 <textarea name="message" value={form.message} onChange={handleChange} rows={6} className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors resize-none"></textarea>
               </div>
 
-              <Button type="submit" disabled={mutation.isLoading}>{mutation.isLoading ? 'Sending...' : 'Send Message'}</Button>
+              <Button type="submit" disabled={isLoading}>{isLoading ? 'Sending...' : 'Send Message'}</Button>
 
-              {mutation.isError && <p className="text-red-600 text-sm">Failed to send message.</p>}
-              {mutation.isSuccess && <p className="text-green-600 text-sm">Message sent. We'll reply shortly.</p>}
+              {isError && <p className="text-red-600 text-sm">Failed to send message.</p>}
+              {isSuccess && <p className="text-green-600 text-sm">Message sent. We'll reply shortly.</p>}
             </form>
           </div>
         </div>

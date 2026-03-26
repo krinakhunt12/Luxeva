@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Product } from '../../../../../types';
+import { Product } from '../types';
+import { X } from 'lucide-react';
 
 interface Props {
   open: boolean;
@@ -16,22 +17,87 @@ export default function ProductForm({ open, onClose, onSave, initial }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-      <div className="bg-white p-6 w-full max-w-lg">
-        <h3 className="text-lg mb-4">{initial ? 'Edit Product' : 'Add Product'}</h3>
-        <div className="space-y-3">
-          <input className="w-full border p-2" placeholder="Name" value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <input className="w-full border p-2" placeholder="Price" type="number" value={form.price ?? ''} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
-          <input className="w-full border p-2" placeholder="Stock" type="number" value={form.stock ?? ''} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} />
-          <input className="w-full border p-2" placeholder="Category" value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-          <input className="w-full border p-2" placeholder="Image URL" value={form.image || ''} onChange={(e) => setForm({ ...form, image: e.target.value })} />
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="bg-white p-12 w-full max-w-xl shadow-2xl relative animate-in zoom-in-95 duration-300">
+        <button 
+          onClick={onClose} 
+          className="absolute top-8 right-8 text-gray-400 hover:text-black transition-colors"
+        >
+          <X size={24} />
+        </button>
+
+        <div className="mb-10 text-center">
+          <span className="text-[10px] uppercase tracking-[0.4em] font-black text-primary">Administration</span>
+          <h3 className="text-3xl font-black uppercase tracking-tighter mt-2">
+            {initial ? 'Edit' : 'New'} <span className="italic font-serif">Product</span>
+          </h3>
         </div>
 
-        <div className="mt-4 flex gap-2 justify-end">
-          <button className="px-4 py-2" onClick={onClose}>Cancel</button>
-          <button className="px-4 py-2 bg-primary text-white" onClick={() => { onSave(form); }}>Save</button>
+        <div className="space-y-8">
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Product Name</label>
+            <input 
+              className="w-full bg-gray-50 border-b-2 border-transparent focus:border-primary px-4 py-4 text-xs focus:outline-none transition-all font-bold text-gray-900" 
+              placeholder="e.g. Silk Midi Dress" 
+              value={form.name || ''} 
+              onChange={(e) => setForm({ ...form, name: e.target.value })} 
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Price ($)</label>
+              <input 
+                className="w-full bg-gray-50 border-b-2 border-transparent focus:border-primary px-4 py-4 text-xs focus:outline-none transition-all font-bold text-gray-900" 
+                placeholder="0.00" 
+                type="number" 
+                value={form.price ?? ''} 
+                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} 
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Stock Count</label>
+              <input 
+                className="w-full bg-gray-50 border-b-2 border-transparent focus:border-primary px-4 py-4 text-xs focus:outline-none transition-all font-bold text-gray-900" 
+                placeholder="0" 
+                type="number" 
+                value={form.stock ?? ''} 
+                onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} 
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Category</label>
+            <input 
+              className="w-full bg-gray-50 border-b-2 border-transparent focus:border-primary px-4 py-4 text-xs focus:outline-none transition-all font-bold text-gray-900" 
+              placeholder="e.g. Dresses" 
+              value={form.category || ''} 
+              onChange={(e) => setForm({ ...form, category: e.target.value })} 
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Image URL</label>
+            <input 
+              className="w-full bg-gray-50 border-b-2 border-transparent focus:border-primary px-4 py-4 text-xs focus:outline-none transition-all font-bold text-gray-900" 
+              placeholder="https://images.luxury..." 
+              value={form.image || ''} 
+              onChange={(e) => setForm({ ...form, image: e.target.value })} 
+            />
+          </div>
+        </div>
+
+        <div className="mt-12">
+          <button 
+            className="w-full py-5 bg-gray-900 hover:bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] transition-all transform hover:scale-[1.02] active:scale-95 shadow-xl shadow-gray-200" 
+            onClick={() => { onSave(form); }}
+          >
+            {initial ? 'Save Changes' : 'Create Product'}
+          </button>
         </div>
       </div>
     </div>
   );
 }
+
