@@ -1,11 +1,13 @@
 import React from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import AdminLogin from './features/admin/AdminLogin';
 import { AnimatePresence } from 'motion/react';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import Collections from './pages/Collections';
 import ProductDetail from './pages/ProductDetail';
 import { Cart, Wishlist } from './pages/CartWishlist';
+import Checkout from './pages/Checkout';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import { Search } from './pages/StaticPages';
@@ -23,6 +25,20 @@ import AddProduct from './features/admin/pages/AddProduct';
 export default function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const currentUser = JSON.parse(localStorage.getItem('luxeva_user') || 'null');
+  const isAdmin = currentUser && currentUser.role === 'admin';
+
+  if (isAdminRoute && !isAdmin) {
+    // Allow access to admin login page; otherwise redirect to admin-specific login
+    if (location.pathname === '/admin/login') {
+      return (
+        <Routes>
+          <Route path="/admin/login" element={<AdminLogin />} />
+        </Routes>
+      );
+    }
+    return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;
+  }
 
   if (isAdminRoute) {
     return (
@@ -49,6 +65,7 @@ export default function App() {
             <Route path="/collections/:category" element={<Collections />} />
             <Route path="/products/:slug" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/search" element={<Search />} />
             <Route path="/about" element={<About />} />

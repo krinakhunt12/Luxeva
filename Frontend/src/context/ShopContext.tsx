@@ -27,7 +27,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return saved ? JSON.parse(saved) : null;
   });
   const [isAdmin, setIsAdmin] = useState(() => {
-    return user?.email === 'khuntkrina7@gmail.com'; // Basic bypass for now, or check backend role
+    // Determine admin from stored user role provided by backend
+    return user?.role === 'admin';
   });
   const [loading, setLoading] = useState(false);
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -48,7 +49,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedUser = localStorage.getItem('luxeva_user');
       const parsedUser = savedUser ? JSON.parse(savedUser) : null;
       setUser(parsedUser);
-      setIsAdmin(parsedUser?.email === 'khuntkrina7@gmail.com');
+      setIsAdmin(parsedUser?.role === 'admin');
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);

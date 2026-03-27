@@ -9,8 +9,29 @@ export default function AddProduct() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    const payload = Object.fromEntries(formData.entries());
-    
+    const raw = Object.fromEntries(formData.entries()) as Record<string, any>;
+
+    // create slug from name if not provided
+    const slugify = (s: string) => s
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    const payload: any = { ...raw };
+    if (!payload.slug && payload.name) payload.slug = slugify(payload.name);
+
+    // normalize numeric fields
+    if (payload.price) payload.price = Number(payload.price);
+    if (payload.stock) payload.stock = Number(payload.stock);
+
+    // map single image field to images array expected by backend
+    if (payload.image) {
+      payload.images = [payload.image];
+      delete payload.image;
+    }
+
     createProduct.mutate(payload as any, {
       onSuccess: () => navigate('/admin/products')
     });

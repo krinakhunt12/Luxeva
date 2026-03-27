@@ -112,9 +112,9 @@ export const Cart = () => {
               </div>
 
               <div className="space-y-4 pt-4">
-                <button className="w-full bg-primary text-white py-5 text-[10px] uppercase tracking-widest font-bold hover:bg-gold transition-colors">
+                <Link to="/checkout" className="w-full bg-primary text-white py-5 text-[10px] uppercase tracking-widest font-bold hover:bg-gold transition-colors inline-block text-center">
                   Checkout Now
-                </button>
+                </Link>
                 <Link 
                   to="/collections" 
                   className="block w-full text-center border border-primary py-5 text-[10px] uppercase tracking-widest font-bold hover:bg-primary hover:text-white transition-all"

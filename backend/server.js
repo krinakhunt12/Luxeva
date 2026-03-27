@@ -4,10 +4,10 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const authRoutes = require('./features/auth/authRoutes');
-const productRoutes = require('./routes/productRoutes');
+const productRoutes = require('./features/products/productRoutes');
 // userRoutes moved to feature folder
 const userRoutes = require('./features/user/userRoutes');
-const orderRoutes = require('./routes/orderRoutes');
+const orderRoutes = require('./features/orders/orderRoutes');
 const Contact = require('./models/Contact');
 
 const PORT = process.env.PORT || 4000;
@@ -17,6 +17,13 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/Luxeva';
 const app = express();
 app.use(cors());
 app.use(express.json());
+const path = require('path');
+const fileUpload = require('express-fileupload');
+
+// Serve uploaded files from /uploads
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+// Parse file uploads
+app.use(fileUpload({ createParentPath: true }));
 
 async function start() {
     try {
@@ -42,7 +49,7 @@ async function start() {
             if (!firstName || !email || !message) return res.status(400).json({ message: 'Missing required fields' });
             const contact = new Contact({ firstName, lastName, email, subject, message });
             await contact.save();
-            return res.status(201).json({ ok: true });
+            return res.status(200).json({ ok: true });
         });
 
         app.listen(PORT, '0.0.0.0', () => console.log(`Luxeva backend listening on port ${PORT}`));

@@ -9,19 +9,22 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function createProduct(payload: Partial<Product>): Promise<Product> {
-  const res = await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  const token = localStorage.getItem('luxeva_token');
+  const res = await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify(payload) });
   if (!res.ok) throw new Error('Create failed');
   return res.json();
 }
 
 export async function updateProduct(id: string, payload: Partial<Product>): Promise<Product> {
-  const res = await fetch(`${base}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  const token = localStorage.getItem('luxeva_token');
+  const res = await fetch(`${base}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify(payload) });
   if (!res.ok) throw new Error('Update failed');
   return res.json();
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  const res = await fetch(`${base}/${id}`, { method: 'DELETE' });
+  const token = localStorage.getItem('luxeva_token');
+  const res = await fetch(`${base}/${id}`, { method: 'DELETE', headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
   if (!res.ok) throw new Error('Delete failed');
 }
 

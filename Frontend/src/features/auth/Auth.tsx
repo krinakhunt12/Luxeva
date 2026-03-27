@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -10,6 +10,8 @@ export const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromPath = (location.state as any)?.from || '/';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +29,12 @@ export const Login = () => {
       // store token locally
       localStorage.setItem('luxeva_token', data.token);
       localStorage.setItem('luxeva_user', JSON.stringify(data.user));
-      navigate('/');
+      // If user was trying to access admin route and is admin, redirect back
+      if (data.user?.role === 'admin' && fromPath.startsWith('/admin')) {
+        navigate(fromPath);
+      } else {
+        navigate('/');
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to login. Please check your credentials.');
     } finally {

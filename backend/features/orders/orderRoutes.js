@@ -1,8 +1,8 @@
-const orderController = require('../features/orders/orderController');
+const orderController = require('./orderController');
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../utils/authMiddleware');
+const { authenticate } = require('../../utils/authMiddleware');
 
 router.get('/', authenticate, orderController.getOrders);
 router.get('/:id', authenticate, orderController.getOrderById);

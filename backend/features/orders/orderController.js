@@ -18,7 +18,7 @@ const createOrder = async(req, res) => {
     if (!userId || !Array.isArray(items) || items.length === 0 || !shippingAddress) return res.status(400).json({ message: 'Missing required fields' });
     const order = new Order({ userId, items, shippingAddress, paymentMethod: paymentMethod || 'unknown', total: total || 0, status: 'created' });
     await order.save();
-    return res.status(201).json(order);
+    return res.status(200).json(order);
 };
 
 const cancelOrder = async(req, res) => {

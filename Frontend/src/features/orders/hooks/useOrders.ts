@@ -4,7 +4,7 @@ import { Order } from '../types';
 import { showSuccess, showError } from '../../../utils/toastService';
 
 export const useOrders = () => {
-  return useQuery<Order[]>(['orders'], api.fetchOrders);
+  return useQuery<Order[]>({ queryKey: ['orders'], queryFn: api.fetchOrders });
 };
 
 export const useCreateOrder = () => {

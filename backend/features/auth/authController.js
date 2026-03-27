@@ -12,7 +12,7 @@ const signup = async(req, res) => {
         const user = new User({ name, email: email.toLowerCase(), mobile, password: hashed });
         await user.save();
         const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET || 'luxeva_secret', { expiresIn: '7d' });
-        const safeUser = { id: user._id, name: user.name, email: user.email, mobile: user.mobile };
+        const safeUser = { id: user._id, name: user.name, email: user.email, mobile: user.mobile, role: user.role };
         return res.json({ user: safeUser, token });
     } catch (err) {
         console.error(err);
@@ -29,7 +29,7 @@ const login = async(req, res) => {
         const match = bcrypt.compareSync(password, user.password);
         if (!match) return res.status(401).json({ message: 'Invalid email or password' });
         const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET || 'luxeva_secret', { expiresIn: '7d' });
-        const safeUser = { id: user._id, name: user.name, email: user.email, mobile: user.mobile };
+        const safeUser = { id: user._id, name: user.name, email: user.email, mobile: user.mobile, role: user.role };
         return res.json({ user: safeUser, token });
     } catch (err) {
         console.error(err);

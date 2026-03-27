@@ -20,7 +20,7 @@ const addUserAddress = async(req, res) => {
     user.addresses = user.addresses || [];
     user.addresses.push({...addr, createdAt: new Date() });
     await user.save();
-    return res.status(201).json(user.addresses[user.addresses.length - 1]);
+    return res.status(200).json(user.addresses[user.addresses.length - 1]);
 };
 
 module.exports = { getUsers, getUserById, addUserAddress };
