@@ -18,12 +18,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 const path = require('path');
-const fileUpload = require('express-fileupload');
+const fs = require('fs');
+// multer will be applied at the product route level
 
 // Serve uploaded files from /uploads
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
-// Parse file uploads
-app.use(fileUpload({ createParentPath: true }));
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 async function start() {
     try {

@@ -19,18 +19,12 @@ const getProductById = async(req, res) => {
 const createProduct = async(req, res) => {
     const payload = req.body || {};
 
-    // If files are uploaded via express-fileupload, move them to uploads and map to `images` array
-    if (req.files && req.files.images) {
-        const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+    // If files are uploaded via multer, they will be in req.files as an array.
+    if (req.files && Array.isArray(req.files) && req.files.length) {
         const uploaded = [];
-        for (const file of files) {
-            const filename = Date.now() + '-' + file.name.replace(/[^a-z0-9.\-()_]/gi, '_');
-            const destDir = path.join(__dirname, '..', '..', 'public', 'uploads');
-            if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-            const dest = path.join(destDir, filename);
-            // file.mv uses callback; wrap in promise
-            await new Promise((resolve, reject) => file.mv(dest, err => err ? reject(err) : resolve()));
-            uploaded.push(`/uploads/${filename}`);
+        for (const file of req.files) {
+            // multer saved file.filename
+            uploaded.push(`/uploads/${file.filename}`);
         }
         payload.images = (payload.images || []).concat(uploaded);
     }
@@ -65,17 +59,11 @@ const createProduct = async(req, res) => {
 
 const updateProduct = async(req, res) => {
     const payload = req.body || {};
-    // If files uploaded via express-fileupload, move them and add to images
-    if (req.files && req.files.images) {
-        const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+    // If files uploaded via multer, they will be in req.files as an array.
+    if (req.files && Array.isArray(req.files) && req.files.length) {
         const uploaded = [];
-        for (const file of files) {
-            const filename = Date.now() + '-' + file.name.replace(/[^a-z0-9.\-()_]/gi, '_');
-            const destDir = path.join(__dirname, '..', '..', 'public', 'uploads');
-            if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-            const dest = path.join(destDir, filename);
-            await new Promise((resolve, reject) => file.mv(dest, err => err ? reject(err) : resolve()));
-            uploaded.push(`/uploads/${filename}`);
+        for (const file of req.files) {
+            uploaded.push(`/uploads/${file.filename}`);
         }
         payload.images = (payload.images || []).concat(uploaded);
     }
