@@ -12,6 +12,8 @@ const ProductSchema = new mongoose.Schema({
     originalPrice: Number,
     category: String,
     subCategory: String,
+    // Store image references as short hashes (strings) that point to Image docs
+    // Legacy entries may still be data URLs or file paths and are handled on read
     images: [String],
     description: String,
     variants: VariantSchema,

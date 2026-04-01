@@ -8,31 +8,17 @@ export default function AddProduct() {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const raw = Object.fromEntries(formData.entries()) as Record<string, any>;
-
-    // create slug from name if not provided
-    const slugify = (s: string) => s
-      .toString()
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-
-    const payload: any = { ...raw };
-    if (!payload.slug && payload.name) payload.slug = slugify(payload.name);
-
-    // normalize numeric fields
-    if (payload.price) payload.price = Number(payload.price);
-    if (payload.stock) payload.stock = Number(payload.stock);
-
-    // map single image field to images array expected by backend
-    if (payload.image) {
-      payload.images = [payload.image];
-      delete payload.image;
+    const target = e.target as HTMLFormElement;
+    const formData = new FormData(target);
+    
+    // The backend expects files in 'images' field
+    const imageFile = formData.get('image') as File;
+    if (imageFile && imageFile.size > 0) {
+      formData.delete('image');
+      formData.append('images', imageFile);
     }
 
-    createProduct.mutate(payload as any, {
+    createProduct.mutate(formData, {
       onSuccess: () => navigate('/admin/products')
     });
   };
@@ -73,8 +59,8 @@ export default function AddProduct() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Image URL</label>
-            <input name="image" className="w-full bg-gray-50 border-b-2 border-transparent focus:border-primary px-4 py-4 text-xs focus:outline-none transition-all font-bold text-gray-900" placeholder="https://..." required />
+            <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Product Photo</label>
+            <input name="image" type="file" accept="image/*" className="w-full bg-gray-50 border-b-2 border-transparent focus:border-primary px-4 py-4 text-xs focus:outline-none transition-all font-bold text-gray-900" required />
           </div>
 
           <div className="pt-6">

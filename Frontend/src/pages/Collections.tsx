@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Filter, X, ChevronDown } from 'lucide-react';
-import { products } from '../data/products';
+import { getProducts } from '../features/products/api/productsApi';
 import { ProductCard } from '../components/ProductCard';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -11,6 +11,22 @@ const Collections = () => {
   const [sortBy, setSortBy] = useState('featured');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const fetchedProducts = await getProducts();
+        setProducts(fetchedProducts);
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -35,14 +51,16 @@ const Collections = () => {
     }
 
     return result;
-  }, [category, selectedSubCategory, priceRange, sortBy]);
+  }, [category, selectedSubCategory, priceRange, sortBy, products]);
 
   const subCategories = useMemo(() => {
     const cats = products
       .filter(p => !category || p.category === category)
       .map(p => p.subCategory);
     return Array.from(new Set(cats));
-  }, [category]);
+  }, [category, products]);
+
+  if (loading) return <div className="pt-32 text-center">Loading products...</div>;
 
   return (
     <div className="pt-32 pb-20 bg-bg min-h-screen">
@@ -94,7 +112,7 @@ const Collections = () => {
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
             {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id || product.id} product={product} />
             ))}
           </div>
         ) : (

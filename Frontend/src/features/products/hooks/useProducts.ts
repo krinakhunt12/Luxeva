@@ -9,12 +9,12 @@ export function useProducts() {
 
 export function useCreateProduct(): ReturnType<typeof useMutation> {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: createProduct, onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['products'] }); showSuccess('Product created'); }, onError: (err: any) => showError(err?.message || 'Create product failed') }) as any;
+  return useMutation({ mutationFn: (payload: FormData) => createProduct(payload), onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['products'] }); showSuccess('Product created'); }, onError: (err: any) => showError(err?.message || 'Create product failed') }) as any;
 }
 
 export function useUpdateProduct(): ReturnType<typeof useMutation> {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: ({ id, payload }: { id: string; payload: Partial<Product> }) => updateProduct(id, payload), onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['products'] }); showSuccess('Product updated'); }, onError: (err: any) => showError(err?.message || 'Update product failed') }) as any;
+  return useMutation({ mutationFn: ({ id, payload }: { id: string; payload: FormData }) => updateProduct(id, payload), onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['products'] }); showSuccess('Product updated'); }, onError: (err: any) => showError(err?.message || 'Update product failed') }) as any;
 }
 
 export function useDeleteProduct(): ReturnType<typeof useMutation> {

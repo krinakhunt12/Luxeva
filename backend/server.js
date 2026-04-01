@@ -5,6 +5,7 @@ const cors = require('cors');
 
 const authRoutes = require('./features/auth/authRoutes');
 const productRoutes = require('./features/products/productRoutes');
+const imageRoutes = require('./features/products/imageRoutes');
 // userRoutes moved to feature folder
 const userRoutes = require('./features/user/userRoutes');
 const orderRoutes = require('./features/orders/orderRoutes');
@@ -21,11 +22,7 @@ const path = require('path');
 const fs = require('fs');
 // multer will be applied at the product route level
 
-// Serve uploaded files from /uploads
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+// Images are stored in the database as Base64 strings; don't serve/create /uploads
 
 async function start() {
     try {
@@ -34,6 +31,7 @@ async function start() {
 
         app.use('/api', authRoutes);
         app.use('/api/products', productRoutes);
+        app.use('/api/images', imageRoutes);
         app.use('/api/users', userRoutes);
         app.use('/api/orders', orderRoutes);
 

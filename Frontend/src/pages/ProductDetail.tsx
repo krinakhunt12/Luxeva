@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, ChevronDown, Check, Ruler, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { products } from '../data/products';
+import { getProductBySlug } from '../features/products/api/productsApi';
 import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { clsx, type ClassValue } from 'clsx';
@@ -22,21 +22,35 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string | null>('description');
-
-  const product = useMemo(() => products.find(p => p.slug === slug), [slug]);
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (product) {
-      setSelectedColor(product.variants.colors[0].name);
-      setSelectedSize(product.variants.sizes[0]);
-      setSelectedImage(0);
-      setDirection(0);
-      setQuantity(1);
-      window.scrollTo(0, 0);
-    }
-  }, [product]);
+    const fetchProduct = async () => {
+      if (!slug) return;
+      try {
+        setLoading(true);
+        const fetchedProduct = await getProductBySlug(slug);
+        setProduct(fetchedProduct);
+        setSelectedColor(fetchedProduct.variants?.colors?.[0]?.name || '');
+        setSelectedSize(fetchedProduct.variants?.sizes?.[0] || '');
+        setSelectedImage(0);
+        setDirection(0);
+        setQuantity(1);
+        window.scrollTo(0, 0);
+      } catch (err) {
+        setError('Failed to load product');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [slug]);
 
-  if (!product) return <div className="pt-40 text-center">Product not found.</div>;
+  if (loading) return <div className="pt-40 text-center">Loading...</div>;
+  if (error || !product) return <div className="pt-40 text-center">{error || 'Product not found.'}</div>;
 
   const nextImage = () => {
     setDirection(1);
