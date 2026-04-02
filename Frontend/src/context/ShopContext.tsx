@@ -8,6 +8,7 @@ interface ShopContextType {
   isAdmin: boolean;
   loading: boolean;
   logout: () => void;
+  updateUserProfile?: (updates: Partial<User>) => Promise<void>;
   addToCart: (product: Product, color: string, size: string, quantity: number) => void;
   removeFromCart: (id: string, color: string, size: string) => void;
   updateCartQuantity: (id: string, color: string, size: string, quantity: number) => void;
@@ -91,6 +92,20 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAdmin(false);
   };
 
+  const updateUserProfile = async (updates: Partial<User>) => {
+    // For now persist locally; ideally call backend API to update user
+    setUser(prev => {
+      const next = prev ? { ...prev, ...updates } : (updates as User);
+      try {
+        localStorage.setItem('luxeva_user', JSON.stringify(next));
+      } catch (e) {
+        // ignore storage errors
+      }
+      setIsAdmin(next?.role === 'admin');
+      return next;
+    });
+  };
+
   const removeFromCart = (id: string, color: string, size: string) => {
     setCart(prev => prev.filter(item => !(item.id === id && item.selectedColor === color && item.selectedSize === size)));
   };
@@ -127,6 +142,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isAdmin,
       loading,
       logout,
+      updateUserProfile,
       addToCart,
       removeFromCart,
       updateCartQuantity,

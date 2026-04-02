@@ -13,6 +13,8 @@ import Contact from './pages/Contact';
 import { Search } from './pages/StaticPages';
 import { Login, SignUp } from './features/auth/Auth';
 import { Account } from './pages/Account';
+import { OrdersPage } from './features/orders/pages/OrdersPage';
+import Settings from './pages/Settings';
 
 // Admin Imports
 import AdminLayout from './features/admin/layout/AdminLayout';
@@ -73,6 +75,8 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </div>
       </AnimatePresence>
