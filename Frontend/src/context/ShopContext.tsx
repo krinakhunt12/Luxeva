@@ -53,6 +53,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdmin(parsedUser?.role === 'admin');
     };
     window.addEventListener('storage', handleStorage);
+    // Also listen for a custom event dispatched in the same tab when login/signup updates localStorage
+    window.addEventListener('luxeva:user-changed', handleStorage as EventListener);
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 

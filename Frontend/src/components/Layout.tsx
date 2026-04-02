@@ -109,36 +109,43 @@ const Header = () => {
             <Search size={18} strokeWidth={1.5} />
           </Link>
           
-          <div className="group relative">
-            <Link to={user ? "/account" : "/login"} className="hover:text-gold transition-colors block">
-              <User size={18} strokeWidth={1.5} />
-            </Link>
-            {user && (
-              <div className="absolute top-full right-0 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                <div className="bg-bg border border-accent p-4 w-48 shadow-xl space-y-3">
-                  <div className="pb-2 border-b border-accent">
-                    <p className="text-[10px] uppercase tracking-widest font-bold truncate">{user.displayName || 'Account'}</p>
-                    <p className="text-[8px] text-muted truncate">{user.email}</p>
+          {!user ? (
+            <div className="flex items-center gap-3">
+              <Link to="/login" className="text-sm uppercase tracking-widest px-3 py-2 hover:text-gold transition-colors">Login</Link>
+              <Link to="/signup" className="text-sm uppercase tracking-widest px-3 py-2 bg-primary text-white rounded hover:bg-gold transition-colors">Sign Up</Link>
+            </div>
+          ) : (
+            <div className="group relative">
+              <Link to="/account" className="hover:text-gold transition-colors block">
+                <User size={18} strokeWidth={1.5} />
+              </Link>
+              {user && (
+                <div className="absolute top-full right-0 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                  <div className="bg-bg border border-accent p-4 w-48 shadow-xl space-y-3">
+                    <div className="pb-2 border-b border-accent">
+                      <p className="text-[10px] uppercase tracking-widest font-bold truncate">{user.displayName || 'Account'}</p>
+                      <p className="text-[8px] text-muted truncate">{user.email}</p>
+                    </div>
+                    <ul className="space-y-2">
+                      {isAdmin && (
+                        <li><Link to="/admin" className="text-[10px] uppercase tracking-widest text-gold font-bold hover:text-primary block">Admin Panel</Link></li>
+                      )}
+                      <li><Link to="/account" className="text-[10px] uppercase tracking-widest hover:text-gold block">Profile</Link></li>
+                      <li><Link to="/orders" className="text-[10px] uppercase tracking-widest hover:text-gold block">Orders</Link></li>
+                      <li>
+                        <button 
+                          onClick={() => logout()}
+                          className="text-[10px] uppercase tracking-widest text-red-500 hover:text-red-600 block w-full text-left"
+                        >
+                          Logout
+                        </button>
+                      </li>
+                    </ul>
                   </div>
-                  <ul className="space-y-2">
-                    {isAdmin && (
-                      <li><Link to="/admin" className="text-[10px] uppercase tracking-widest text-gold font-bold hover:text-primary block">Admin Panel</Link></li>
-                    )}
-                    <li><Link to="/account" className="text-[10px] uppercase tracking-widest hover:text-gold block">Profile</Link></li>
-                    <li><Link to="/orders" className="text-[10px] uppercase tracking-widest hover:text-gold block">Orders</Link></li>
-                    <li>
-                      <button 
-                        onClick={() => logout()}
-                        className="text-[10px] uppercase tracking-widest text-red-500 hover:text-red-600 block w-full text-left"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           <Link to="/wishlist" className="hover:text-gold transition-colors relative">
             <Heart size={18} strokeWidth={1.5} />

@@ -14,6 +14,7 @@ import { Search } from './pages/StaticPages';
 import { Login, SignUp } from './features/auth/Auth';
 import { Account } from './pages/Account';
 import { OrdersPage } from './features/orders/pages/OrdersPage';
+import ProtectedRoute from './components/ProtectedRoute';
 import Settings from './pages/Settings';
 
 // Admin Imports
@@ -57,6 +58,22 @@ export default function App() {
     );
   }
 
+  const isAuthRoute = location.pathname === '/login' || location.pathname === '/signup';
+
+  if (isAuthRoute) {
+    return (
+      <AnimatePresence mode="wait">
+        <div key={location.pathname}>
+          <Routes location={location}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </AnimatePresence>
+    );
+  }
+
   return (
     <Layout>
       <AnimatePresence mode="wait">
@@ -67,16 +84,14 @@ export default function App() {
             <Route path="/collections/:category" element={<Collections />} />
             <Route path="/products/:slug" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/search" element={<Search />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           </Routes>
         </div>
       </AnimatePresence>

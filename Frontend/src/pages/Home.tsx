@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { getProducts } from './features/products/api/productsApi';
+import { getProducts } from '../features/products/api/productsApi';
 import { ProductCard } from '../components/ProductCard';
 import { ArrowRight, Play } from 'lucide-react';
 

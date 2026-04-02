@@ -29,6 +29,8 @@ export const Login = () => {
       // store token locally
       localStorage.setItem('luxeva_token', data.token);
       localStorage.setItem('luxeva_user', JSON.stringify(data.user));
+        // notify app (same-tab) that user changed
+        window.dispatchEvent(new Event('luxeva:user-changed'));
       // If user was trying to access admin route and is admin, redirect back
       if (data.user?.role === 'admin' && fromPath.startsWith('/admin')) {
         navigate(fromPath);
@@ -158,6 +160,8 @@ export const SignUp = () => {
       if (!res.ok) throw new Error(data.message || 'Failed to create account');
       localStorage.setItem('luxeva_token', data.token);
       localStorage.setItem('luxeva_user', JSON.stringify(data.user));
+        // notify app (same-tab) that user changed
+        window.dispatchEvent(new Event('luxeva:user-changed'));
       navigate('/');
     } catch (err: any) {
       setError(err.message || 'Failed to create account.');
