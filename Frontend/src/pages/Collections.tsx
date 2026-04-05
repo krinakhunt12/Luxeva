@@ -5,6 +5,12 @@ import { getProducts } from '../features/products/api/productsApi';
 import { ProductCard } from '../components/ProductCard';
 import { motion, AnimatePresence } from 'motion/react';
 
+// map URL collection slugs to backend category values
+const CATEGORY_MAP: Record<string, string[]> = {
+  women: ['Dress', 'Top', 'Skirt', 'Saree', 'Kurta', 'Blouse'],
+  men: ['Shirt', 'Tshirt', 'Pants', 'Jacket'],
+};
+
 const Collections = () => {
   const { category } = useParams<{ category?: string }>();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -18,6 +24,8 @@ const Collections = () => {
     const fetchProducts = async () => {
       try {
         const fetchedProducts = await getProducts();
+        console.log('fetchedProducts count:', fetchedProducts?.length);
+        console.log('sample product:', fetchedProducts?.[0]);
         setProducts(fetchedProducts);
       } catch (err) {
         console.error('Failed to fetch products:', err);
@@ -32,9 +40,18 @@ const Collections = () => {
     let result = products;
     
     if (category && category !== 'sale') {
-      result = result.filter(p => p.category === category);
+      const slug = category.toLowerCase();
+      const mapped = CATEGORY_MAP[slug];
+      if (mapped) {
+        result = result.filter((p: any) => mapped.includes(p.category));
+      } else {
+        result = result.filter((p: any) => (
+          (p.category || '').toLowerCase() === slug ||
+          ((p.category || '').replace(/\s+/g, '-').toLowerCase() === slug)
+        ));
+      }
     } else if (category === 'sale') {
-      result = result.filter(p => p.isSale);
+      result = result.filter((p: any) => p.isSale);
     }
 
     if (selectedSubCategory) {

@@ -5,7 +5,6 @@ const cors = require('cors');
 
 const authRoutes = require('./features/auth/authRoutes');
 const productRoutes = require('./features/products/productRoutes');
-const imageRoutes = require('./features/products/imageRoutes');
 // userRoutes moved to feature folder
 const userRoutes = require('./features/user/userRoutes');
 const orderRoutes = require('./features/orders/orderRoutes');
@@ -18,11 +17,7 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/Luxeva';
 const app = express();
 app.use(cors());
 app.use(express.json());
-const path = require('path');
-const fs = require('fs');
-// multer will be applied at the product route level
-
-// Images are stored in the database as Base64 strings; don't serve/create /uploads
+// Images are stored in the database as Base64 strings directly in the Product collection.
 
 async function start() {
     try {
@@ -31,7 +26,6 @@ async function start() {
 
         app.use('/api', authRoutes);
         app.use('/api/products', productRoutes);
-        app.use('/api/images', imageRoutes);
         app.use('/api/users', userRoutes);
         app.use('/api/orders', orderRoutes);
 
