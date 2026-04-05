@@ -2,9 +2,26 @@ const Product = require('./Product');
 
 const getProducts = async(req, res) => {
     try {
-        const { search } = req.query;
+        const { search, page, limit, category } = req.query;
         const q = {};
         if (search) q.$or = [{ name: new RegExp(search, 'i') }, { slug: new RegExp(search, 'i') }, { description: new RegExp(search, 'i') }];
+        if (category) q.category = new RegExp(`^${String(category)}`, 'i');
+
+        // If page and limit are provided, return paginated response
+        const pageNum = page ? parseInt(page, 10) : null;
+        const limitNum = limit ? parseInt(limit, 10) : null;
+
+        if (pageNum && limitNum) {
+            const skip = (pageNum - 1) * limitNum;
+            const [items, total] = await Promise.all([
+                Product.find(q).skip(skip).limit(limitNum).lean(),
+                Product.countDocuments(q)
+            ]);
+            const pages = Math.max(1, Math.ceil(total / limitNum));
+            return res.json({ products: items, total, page: pageNum, pages });
+        }
+
+        // Default: return all products (backwards compatible)
         const products = await Product.find(q).lean();
         return res.json(products);
     } catch (err) {
@@ -27,6 +44,35 @@ const getProductBySlug = async(req, res) => {
         const product = await Product.findOne({ slug: req.params.slug }).lean();
         if (!product) return res.status(404).json({ message: 'Product not found' });
         return res.json(product);
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+const getFilters = async(req, res) => {
+    try {
+        const { category } = req.query;
+        const match = {};
+        if (category) match.category = new RegExp(`^${String(category)}`, 'i');
+
+        const pipeline = [
+            { $match: match },
+            { $project: { variants: 1, subCategory: 1 } },
+            { $unwind: { path: '$variants.colors', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$variants.sizes', preserveNullAndEmptyArrays: true } },
+            {
+                $group: {
+                    _id: null,
+                    colors: { $addToSet: { name: '$variants.colors.name', hex: '$variants.colors.hex' } },
+                    sizes: { $addToSet: '$variants.sizes' },
+                    subCategories: { $addToSet: '$subCategory' }
+                }
+            },
+            { $project: { _id: 0, colors: 1, sizes: 1, subCategories: 1 } }
+        ];
+
+        const [result] = await Product.aggregate(pipeline);
+        return res.json(result || { colors: [], sizes: [], subCategories: [] });
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }
@@ -105,4 +151,4 @@ const deleteProduct = async(req, res) => {
     }
 };
 
-module.exports = { getProducts, getProductById, getProductBySlug, createProduct, updateProduct, deleteProduct };
+module.exports = { getProducts, getProductById, getProductBySlug, getFilters, createProduct, updateProduct, deleteProduct };

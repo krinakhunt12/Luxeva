@@ -43,7 +43,11 @@ const Collections = () => {
       const slug = category.toLowerCase();
       const mapped = CATEGORY_MAP[slug];
       if (mapped) {
-        result = result.filter((p: any) => mapped.includes(p.category));
+        const mappedLower = mapped.map(m => m.toLowerCase());
+        result = result.filter((p: any) => {
+          const cat = (p.category || '').toLowerCase();
+          return cat === slug || mappedLower.includes(cat);
+        });
       } else {
         result = result.filter((p: any) => (
           (p.category || '').toLowerCase() === slug ||
@@ -71,9 +75,18 @@ const Collections = () => {
   }, [category, selectedSubCategory, priceRange, sortBy, products]);
 
   const subCategories = useMemo(() => {
-    const cats = products
-      .filter(p => !category || p.category === category)
-      .map(p => p.subCategory);
+    const filtered = products.filter(p => {
+      if (!category) return true;
+      const slug = category.toLowerCase();
+      const mapped = CATEGORY_MAP[slug];
+      const cat = (p.category || '').toLowerCase();
+      if (mapped) {
+        const mappedLower = mapped.map(m => m.toLowerCase());
+        return cat === slug || mappedLower.includes(cat);
+      }
+      return cat === slug || ((p.category || '').replace(/\s+/g, '-').toLowerCase() === slug);
+    });
+    const cats = filtered.map(p => p.subCategory).filter(Boolean);
     return Array.from(new Set(cats));
   }, [category, products]);
 
@@ -134,7 +147,7 @@ const Collections = () => {
           </div>
         ) : (
           <div className="py-40 text-center space-y-6">
-            <p className="text-muted text-lg italic font-serif">No products found matching your criteria.</p>
+            <p className="Why">No products found matching your criteria.</p>
             <button 
               onClick={() => { setSelectedSubCategory(null); setPriceRange([0, 20000]); }}
               className="text-[10px] uppercase tracking-widest font-bold border-b border-primary pb-1"

@@ -3,12 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Product, User } from '../../types';
 import { ProductCard } from '../../components/ProductCard';
 import { LayoutDashboard, Package, Users } from 'lucide-react';
-
-const fetchProducts = async (): Promise<Product[]> => {
-  const res = await fetch('/api/products');
-  if (!res.ok) throw new Error('Failed to load products');
-  return res.json();
-};
+import { getProductsPaged } from '../products/api/productsApi';
 
 const fetchUsers = async (): Promise<User[]> => {
   const res = await fetch('/api/users');
@@ -20,7 +15,16 @@ export const Admin = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'users'>('dashboard');
 
-  const { data: products = [], isLoading: prodsLoading } = useQuery({ queryKey: ['products'], queryFn: fetchProducts });
+  // pagination state for admin products
+  const [page, setPage] = useState(1);
+  const limit = 12;
+
+  const { data: paged, isLoading: prodsLoading } = useQuery({
+    queryKey: ['admin-products', page],
+    queryFn: () => getProductsPaged(page, limit),
+    keepPreviousData: true
+  });
+  const products: Product[] = (paged && (paged as any).products) || [];
   const { data: users = [], isLoading: usersLoading } = useQuery({ queryKey: ['users'], queryFn: fetchUsers });
 
   // Example mutation to create product (requires auth token on backend)
@@ -68,10 +72,23 @@ export const Admin = () => {
                   <button className="bg-primary text-white px-4 py-2 uppercase text-xs" onClick={() => createProduct.mutate({ name: 'New Product', slug: `new-${Date.now()}`, price: 0 })}>Create</button>
                 </div>
 
-                {prodsLoading ? <p>Loading products...</p> : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {products.map(p => <ProductCard key={p.id || (p as any)._id} product={p} />)}
-                  </div>
+                  {prodsLoading ? <p>Loading products...</p> : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {products.map(p => <ProductCard key={p.id || (p as any)._id} product={p} />)}
+                    </div>
+
+                    {/* Pagination controls */}
+                    <div className="flex items-center justify-center gap-4 mt-8">
+                      <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-2 border">
+                        Prev
+                      </button>
+                      <span className="text-sm">Page {paged?.page} of {paged?.pages}</span>
+                      <button disabled={page >= (paged?.pages || 1)} onClick={() => setPage(p => p + 1)} className="px-3 py-2 border">
+                        Next
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             )}
