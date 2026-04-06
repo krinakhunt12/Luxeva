@@ -8,6 +8,7 @@ const productRoutes = require('./features/products/productRoutes');
 // userRoutes moved to feature folder
 const userRoutes = require('./features/user/userRoutes');
 const orderRoutes = require('./features/orders/orderRoutes');
+const offerRoutes = require('./features/offers/offerRoutes');
 const Contact = require('./models/Contact');
 
 const PORT = process.env.PORT || 4000;
@@ -28,6 +29,7 @@ async function start() {
         app.use('/api/products', productRoutes);
         app.use('/api/users', userRoutes);
         app.use('/api/orders', orderRoutes);
+        app.use('/api/offers', offerRoutes);
 
         app.get('/api/pages/about', (req, res) => {
             return res.json({

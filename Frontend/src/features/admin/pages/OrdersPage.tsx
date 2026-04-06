@@ -1,8 +1,10 @@
 import React from 'react';
-import { useOrders } from '../../orders/hooks/useOrders';
+import { useOrders, useUpdateOrderStatus } from '../../orders/hooks/useOrders';
+import { showError, showSuccess } from '../../../utils/toastService';
 
 export default function OrdersManagement() {
   const { data: orders = [], isLoading } = useOrders();
+  const updateStatus = useUpdateOrderStatus();
 
   if (isLoading) return <div className="p-8 italic font-serif">Loading instances of order...</div>;
 
@@ -32,13 +34,18 @@ export default function OrdersManagement() {
                 </td>
                 <td className="p-6 text-sm font-black text-primary">${order.totalAmount?.toFixed(2) || '0.00'}</td>
                 <td className="p-6">
-                  <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full shadow-sm ${
-                    order.status === 'delivered' ? 'bg-green-50 text-green-600' :
-                    order.status === 'cancelled' ? 'bg-red-50 text-red-600' :
-                    'bg-yellow-50 text-yellow-600'
-                  }`}>
-                    {order.status || 'pending'}
-                  </span>
+                  <select
+                    value={order.status || 'pending'}
+                    onChange={(e) => {
+                      const newStatus = e.target.value;
+                      updateStatus.mutate({ id: order._id || order.id, status: newStatus });
+                    }}
+                    className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full shadow-sm bg-white border"
+                  >
+                    {['created','pending','processing','shipped','delivered','cancelled'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </td>
                 <td className="p-6 text-xs text-gray-400">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</td>
                 <td className="p-6">

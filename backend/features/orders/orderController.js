@@ -53,4 +53,22 @@ const cancelOrder = async(req, res) => {
     return res.json(order);
 };
 
-module.exports = { getOrders, getOrderById, createOrder, cancelOrder };
+// update order status (e.g., processing, shipped, delivered, cancelled)
+const updateOrderStatus = async(req, res) => {
+    try {
+        const { status } = req.body || {};
+        if (!status) return res.status(400).json({ message: 'Missing status' });
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+        order.status = status;
+        if (status === 'cancelled') order.cancelledAt = new Date();
+        if (status === 'delivered') order.deliveredAt = new Date();
+        await order.save();
+        return res.json(order);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+module.exports = { getOrders, getOrderById, createOrder, cancelOrder, updateOrderStatus };

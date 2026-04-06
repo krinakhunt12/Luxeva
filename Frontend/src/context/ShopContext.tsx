@@ -9,6 +9,8 @@ interface ShopContextType {
   loading: boolean;
   logout: () => void;
   updateUserProfile?: (updates: Partial<User>) => Promise<void>;
+  deleteAccount?: () => Promise<boolean>;
+  clearCart: () => void;
   addToCart: (product: Product, color: string, size: string, quantity: number) => void;
   removeFromCart: (id: string, color: string, size: string) => void;
   updateCartQuantity: (id: string, color: string, size: string, quantity: number) => void;
@@ -62,6 +64,17 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('luxeva_cart', JSON.stringify(cart));
   }, [cart]);
 
+  const clearCart = () => {
+    setCart([]);
+    try {
+      localStorage.setItem('luxeva_cart', JSON.stringify([]));
+    } catch (e) {
+      // ignore
+    }
+    // ensure cart drawer is closed when clearing
+    setIsCartOpen(false);
+  };
+
   useEffect(() => {
     localStorage.setItem('luxeva_wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
@@ -95,17 +108,39 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateUserProfile = async (updates: Partial<User>) => {
-    // For now persist locally; ideally call backend API to update user
-    setUser(prev => {
-      const next = prev ? { ...prev, ...updates } : (updates as User);
-      try {
-        localStorage.setItem('luxeva_user', JSON.stringify(next));
-      } catch (e) {
-        // ignore storage errors
-      }
-      setIsAdmin(next?.role === 'admin');
-      return next;
+    const stored = localStorage.getItem('luxeva_user');
+    const current = stored ? JSON.parse(stored) : user;
+    if (!current) throw new Error('Not authenticated');
+    const id = current.id || current.uid || current._id;
+    if (!id) throw new Error('User id not found');
+    const token = localStorage.getItem('luxeva_token');
+    const res = await fetch(`/api/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+      body: JSON.stringify(updates),
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to update profile');
+    }
+    const updated = await res.json();
+    setUser(updated as User);
+    try { localStorage.setItem('luxeva_user', JSON.stringify(updated)); } catch (e) {}
+    setIsAdmin((updated as any).role === 'admin');
+  };
+
+  const deleteAccount = async () => {
+    const stored = localStorage.getItem('luxeva_user');
+    const current = stored ? JSON.parse(stored) : user;
+    if (!current) throw new Error('Not authenticated');
+    const id = current.id || current.uid || current._id;
+    if (!id) throw new Error('User id not found');
+    const token = localStorage.getItem('luxeva_token');
+    const res = await fetch(`/api/users/${id}`, { method: 'DELETE', headers: { Authorization: token ? `Bearer ${token}` : '' } });
+    if (!res.ok) return false;
+    // clear local data
+    logout();
+    return true;
   };
 
   const removeFromCart = (id: string, color: string, size: string) => {
@@ -145,6 +180,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loading,
       logout,
       updateUserProfile,
+      clearCart,
       addToCart,
       removeFromCart,
       updateCartQuantity,

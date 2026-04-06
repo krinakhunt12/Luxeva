@@ -21,6 +21,7 @@ import Settings from './pages/Settings';
 import AdminLayout from './features/admin/layout/AdminLayout';
 import AdminDashboard from './features/admin/pages/Dashboard';
 import ProductsPage from './features/products/pages/ProductsPage';
+import OffersPage from './features/admin/pages/OffersPage';
 import UsersManagement from './features/admin/pages/UsersPage';
 import OrdersManagement from './features/admin/pages/OrdersPage';
 import AddProduct from './features/admin/pages/AddProduct';
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="products" element={<ProductsPage />} />
           <Route path="users" element={<UsersManagement />} />
           <Route path="orders" element={<OrdersManagement />} />
+          <Route path="offers" element={<OffersPage />} />
           <Route path="add-product" element={<AddProduct />} />
         </Route>
       </Routes>

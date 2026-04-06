@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, Menu, X, ChevronDown, Plus, Minus, Trash2, User, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useShop } from '../context/ShopContext';
@@ -10,22 +10,50 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const AnnouncementBar = () => (
-  <div className="bg-primary text-white py-2 overflow-hidden whitespace-nowrap border-b border-white/10">
-    <motion.div 
-      animate={{ x: [0, -1000] }}
-      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-      className="inline-block px-4 text-[10px] uppercase tracking-[0.2em] font-medium"
-    >
-      Free shipping on orders over ₹2000 • New Arrivals: The Spring Collection is here • 10% off your first order with code LUXEVA10 • Free shipping on orders over ₹2000 • New Arrivals: The Spring Collection is here • 10% off your first order with code LUXEVA10
-    </motion.div>
-  </div>
-);
+const AnnouncementBar = () => {
+  const [bannerText, setBannerText] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/offers');
+        if (!res.ok) return;
+        const offers = await res.json();
+        const now = Date.now();
+        const soon = offers.find((o: any) => o.active && o.endsAt && (new Date(o.endsAt).getTime() - now) <= 48 * 60 * 60 * 1000 && (new Date(o.endsAt).getTime() - now) > 0);
+        if (mounted && soon) {
+          const msLeft = new Date(soon.endsAt).getTime() - now;
+          const hours = Math.ceil(msLeft / (1000 * 60 * 60));
+          setBannerText(`${soon.title} — ends in ${hours} hour${hours > 1 ? 's' : ''}! ${soon.discountType === 'percentage' ? soon.amount + '% off' : 'Flat ₹' + soon.amount + ' off'}`);
+        }
+      } catch (err) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const content = bannerText || 'Free shipping on orders over ₹2000 • New Arrivals: The Spring Collection is here • 10% off your first order with code LUXEVA10';
+
+  return (
+    <div className="bg-primary text-white py-2 overflow-hidden whitespace-nowrap border-b border-white/10">
+      <motion.div
+        animate={{ x: [0, -1000] }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        className="inline-block px-4 text-[10px] uppercase tracking-[0.2em] font-medium"
+      >
+        {content} • {content}
+      </motion.div>
+    </div>
+  );
+};
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cartCount, wishlist, setIsCartOpen, user, isAdmin, logout } = useShop();
+  const navigate = useNavigate();
   const location = useLocation();
   const isHome = location.pathname === '/';
 
@@ -156,7 +184,7 @@ const Header = () => {
             )}
           </Link>
           <button 
-            onClick={() => setIsCartOpen(true)}
+            onClick={() => navigate('/cart')}
             className="hover:text-gold transition-colors relative"
           >
             <ShoppingBag size={18} strokeWidth={1.5} />

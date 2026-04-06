@@ -15,9 +15,11 @@ import {
   Search
 } from 'lucide-react';
 import { Product, User } from '../types';
+import OfferForm from '../features/admin/OfferForm';
+import OffersList from '../features/admin/OffersList';
 
 // Sub-components for Admin Panel
-const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: 'dashboard' | 'products' | 'users') => void }) => (
+const Sidebar = ({ activeTab, setActiveTab, offersOpen, setOffersOpen }: { activeTab: string, setActiveTab: (tab: 'dashboard' | 'products' | 'users') => void, offersOpen: boolean, setOffersOpen: (v: boolean) => void }) => (
   <aside className="lg:w-64 space-y-2">
     <button 
       onClick={() => setActiveTab('dashboard')}
@@ -36,6 +38,12 @@ const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab:
       className={`w-full flex items-center gap-3 p-4 text-[10px] uppercase tracking-widest font-bold transition-colors ${activeTab === 'users' ? 'bg-primary text-white' : 'bg-white border border-accent hover:border-primary'}`}
     >
       <Users size={16} /> Users
+    </button>
+    <button 
+      onClick={() => setOffersOpen(!offersOpen)}
+      className={`w-full flex items-center gap-3 p-4 text-[10px] uppercase tracking-widest font-bold transition-colors ${offersOpen ? 'bg-primary text-white' : 'bg-white border border-accent hover:border-primary'}`}
+    >
+      Offers
     </button>
   </aside>
 );
@@ -64,6 +72,7 @@ const DashboardStats = ({ productsCount, usersCount }: { productsCount: number, 
 export const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useShop();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'users'>('dashboard');
+  const [offersOpen, setOffersOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -267,12 +276,22 @@ export const Admin = () => {
     <div className="pt-32 pb-20 bg-bg min-h-screen">
       <div className="container mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-8">
-          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} offersOpen={offersOpen} setOffersOpen={setOffersOpen} />
 
           {/* Main Content */}
           <main className="flex-1">
             {activeTab === 'dashboard' && (
               <DashboardStats productsCount={products.length} usersCount={users.length} />
+            )}
+
+            {offersOpen && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-light">Offers</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <OfferForm onCreated={() => { /* refresh actions can be added */ }} />
+                  <OffersList />
+                </div>
+              </div>
             )}
 
             {activeTab === 'products' && (

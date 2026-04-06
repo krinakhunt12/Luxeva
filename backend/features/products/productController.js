@@ -22,7 +22,40 @@ const getProducts = async(req, res) => {
         }
 
         // Default: return all products (backwards compatible)
-        const products = await Product.find(q).lean();
+        let products = await Product.find(q).lean();
+
+        // Attach active offers (simple application logic)
+        try {
+            const Offer = require('../offers/Offer');
+            const now = new Date();
+            const offers = await Offer.find({ active: true }).lean();
+
+            const activeOffers = offers.filter(o => {
+                if (o.startsAt && new Date(o.startsAt) > now) return false;
+                if (o.endsAt && new Date(o.endsAt) < now) return false;
+                return o.active !== false;
+            });
+
+            products = products.map(p => {
+                const matched = activeOffers.find(o => o.appliesTo === 'all' || (o.appliesTo === 'product' && String(o.productId) === String(p._id)));
+                if (!matched) return p;
+                const copy = {...p };
+                const amt = Number(matched.amount || 0);
+                if (matched.discountType === 'fixed') {
+                    copy.originalPrice = copy.price;
+                    copy.price = Math.max(0, copy.price - amt);
+                } else {
+                    copy.originalPrice = copy.price;
+                    copy.price = Math.max(0, Math.round(copy.price * (1 - amt / 100)));
+                }
+                copy.appliedOffer = { id: matched._id, title: matched.title, discountType: matched.discountType, amount: matched.amount };
+                return copy;
+            });
+        } catch (e) {
+            // if offers directory not present or error, ignore and return products unchanged
+            console.warn('offers not applied:', e.message || e);
+        }
+
         return res.json(products);
     } catch (err) {
         return res.status(500).json({ message: err.message });

@@ -15,3 +15,10 @@ export const createOrder = async (payload: Partial<Order>): Promise<Order> => {
   if (!res.ok) throw new Error('Create order failed');
   return res.json();
 };
+
+export const updateOrderStatus = async (id: string, status: string): Promise<Order> => {
+  const token = localStorage.getItem('luxeva_token');
+  const res = await fetch(`/api/orders/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify({ status }) });
+  if (!res.ok) throw new Error('Update order status failed');
+  return res.json();
+};

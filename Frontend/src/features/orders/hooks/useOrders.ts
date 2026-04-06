@@ -9,5 +9,14 @@ export const useOrders = () => {
 
 export const useCreateOrder = () => {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: (payload: Partial<Order>) => api.createOrder(payload), onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['orders'] }); showSuccess('Order created'); }, onError: (err: any) => showError(err?.message || 'Create order failed') });
+  return useMutation({ mutationFn: (payload: Partial<Order>) => api.createOrder(payload), onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['orders'] }); showSuccess('Order placed'); }, onError: (err: any) => showError(err?.message || 'Create order failed') });
+};
+
+export const useUpdateOrderStatus = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => api.updateOrderStatus(id, status),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['orders'] }); showSuccess('Order status updated'); },
+    onError: (err: any) => showError(err?.message || 'Update order status failed')
+  });
 };

@@ -124,7 +124,7 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         <button 
           onClick={handleWishlist}
           className={cn(
-            "absolute top-4 right-12 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-all duration-300",
+            "absolute top-4 right-13 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-all duration-300",
             inWishlist ? "text-red-500 scale-110" : "text-primary hover:text-gold"
           )}
         >
@@ -158,17 +158,28 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       {/* Info */}
       <div className="mt-4 space-y-1">
         <div className="flex justify-between items-start">
-          <Link to={`/products/${product.slug}`} className="text-[11px] uppercase tracking-widest font-bold hover:text-gold transition-colors">
+          <Link to={`/products/${product.slug}`} className="text-sm md:text-lg font-semibold hover:text-gold transition-colors">
             {product.name}
           </Link>
         </div>
         <p className="text-[10px] text-muted uppercase tracking-widest">{product.subCategory}</p>
+        <p
+          className="text-sm text-muted"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2 as any,
+            WebkitBoxOrient: 'vertical' as any,
+            overflow: 'hidden',
+          }}
+        >
+          {(product as any).description || ''}
+        </p>
         <div className="flex gap-2 items-center">
-          <span className={cn("text-xs font-medium", product.originalPrice && "text-gold")}>
+          <span className={cn("text-lg font-semibold", product.originalPrice && "text-gold")}>
             ₹{product.price}
           </span>
           {product.originalPrice && (
-            <span className="text-[10px] text-muted line-through">₹{product.originalPrice}</span>
+            <span className="text-sm text-muted line-through">₹{product.originalPrice}</span>
           )}
         </div>
 
