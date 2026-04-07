@@ -15,6 +15,7 @@ import {
   Search
 } from 'lucide-react';
 import { Product, User } from '../types';
+import Skeleton from '../components/ui/Skeleton';
 import OfferForm from '../features/admin/OfferForm';
 import OffersList from '../features/admin/OffersList';
 
@@ -118,7 +119,7 @@ export const Admin = () => {
     };
   }, [isAdmin]);
 
-  if (authLoading) return <div className="pt-40 text-center">Loading...</div>;
+  if (authLoading) return <div className="pt-40"><Skeleton className="max-w-4xl mx-auto px-6" lines={3} /></div>;
   if (!isAdmin) return <div className="pt-40 text-center">Access Denied</div>;
 
   const handleOpenModal = (product: Product | null = null) => {

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
+import ErrorPage from './pages/ErrorPage';
 import AdminLogin from './features/admin/AdminLogin';
 import { AnimatePresence } from 'motion/react';
 import { Layout } from './components/Layout';
@@ -36,9 +38,11 @@ export default function App() {
     // Allow access to admin login page; otherwise redirect to admin-specific login
     if (location.pathname === '/admin/login') {
       return (
-        <Routes>
-          <Route path="/admin/login" element={<AdminLogin />} />
-        </Routes>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/admin/login" element={<AdminLogin />} />
+          </Routes>
+        </ErrorBoundary>
       );
     }
     return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;
@@ -46,17 +50,19 @@ export default function App() {
 
   if (isAdminRoute) {
     return (
-      <Routes>
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="products" element={<ProductsPage />} />
-          <Route path="users" element={<UsersManagement />} />
-          <Route path="orders" element={<OrdersManagement />} />
-          <Route path="offers" element={<OffersPage />} />
-          <Route path="add-product" element={<AddProduct />} />
-        </Route>
-      </Routes>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="products" element={<ProductsPage />} />
+            <Route path="users" element={<UsersManagement />} />
+            <Route path="orders" element={<OrdersManagement />} />
+            <Route path="offers" element={<OffersPage />} />
+            <Route path="add-product" element={<AddProduct />} />
+          </Route>
+        </Routes>
+      </ErrorBoundary>
     );
   }
 
@@ -64,23 +70,26 @@ export default function App() {
 
   if (isAuthRoute) {
     return (
-      <AnimatePresence mode="wait">
-        <div key={location.pathname}>
-          <Routes location={location}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </div>
-      </AnimatePresence>
+      <ErrorBoundary>
+        <AnimatePresence mode="wait">
+          <div key={location.pathname}>
+            <Routes location={location}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </AnimatePresence>
+      </ErrorBoundary>
     );
   }
 
   return (
-    <Layout>
-      <AnimatePresence mode="wait">
-        <div key={location.pathname}>
-          <Routes location={location}>
+    <ErrorBoundary>
+      <Layout>
+        <AnimatePresence mode="wait">
+          <div key={location.pathname}>
+            <Routes location={location}>
             <Route path="/" element={<Home />} />
             <Route path="/collections" element={<Collections />} />
             <Route path="/collections/:category" element={<Collections />} />
@@ -94,9 +103,11 @@ export default function App() {
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="*" element={<ErrorPage message="Page not found." />} />
           </Routes>
         </div>
       </AnimatePresence>
     </Layout>
+    </ErrorBoundary>
   );
 }

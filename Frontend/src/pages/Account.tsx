@@ -5,7 +5,7 @@ import { User, Package, Heart, LogOut, Settings, ChevronRight, LayoutDashboard }
 import { Link, useNavigate } from 'react-router-dom';
 
 export const Account = () => {
-  const { user, isAdmin, logout } = useShop();
+  const { user, isAdmin, logout, updateUserProfile, deleteAccount } = useShop();
   const navigate = useNavigate();
 
   if (!user) {

@@ -7,6 +7,7 @@ import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import Skeleton from '../components/ui/Skeleton';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -32,6 +33,7 @@ const ProductDetail = () => {
       try {
         setLoading(true);
         const fetchedProduct = await getProductBySlug(slug);
+        setError(null);
         setProduct(fetchedProduct);
         setSelectedColor(fetchedProduct.variants?.colors?.[0]?.name || '');
         setSelectedSize(fetchedProduct.variants?.sizes?.[0] || '');
@@ -49,7 +51,55 @@ const ProductDetail = () => {
     fetchProduct();
   }, [slug]);
 
-  if (loading) return <div className="pt-40 text-center">Loading...</div>;
+  // Poll for product changes / deletion while on the page.
+  useEffect(() => {
+    if (!slug) return;
+    const interval = setInterval(async () => {
+      try {
+        const fetched = await getProductBySlug(slug);
+        // if fetch succeeded but there is no product, treat as not found
+        if (!fetched) {
+          setProduct(null);
+          setError('Product not found.');
+          return;
+        }
+        // update product if changed
+        setProduct((prev) => {
+          try {
+            if (!prev) return fetched;
+            if ((prev.id || (prev as any)._id) !== (fetched.id || (fetched as any)._id)) return fetched;
+            const prevStr = JSON.stringify(prev);
+            const newStr = JSON.stringify(fetched);
+            return prevStr === newStr ? prev : fetched;
+          } catch (e) {
+            return fetched;
+          }
+        });
+        setError(null);
+      } catch (err) {
+        // likely 404 or deleted
+        setProduct(null);
+        setError('Product not found.');
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [slug]);
+
+  if (loading) return (
+    <div className="pt-32 pb-20 bg-bg">
+      <div className="container mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+          <div className="lg:col-span-7">
+            <Skeleton count={1} lines={1} className="h-[480px] bg-accent" />
+          </div>
+          <div className="lg:col-span-5 space-y-6">
+            <Skeleton lines={4} count={1} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   if (error || !product) return <div className="pt-40 text-center">{error || 'Product not found.'}</div>;
 
   const nextImage = () => {

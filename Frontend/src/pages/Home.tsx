@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import { getProducts } from '../features/products/api/productsApi';
 import { ProductCard } from '../components/ProductCard';
 import { ArrowRight, Play } from 'lucide-react';
+import Skeleton from '../components/ui/Skeleton';
 
 const Hero = () => {
   const ref = useRef(null);
@@ -118,7 +119,7 @@ const NewArrivals = () => {
 
   const newProducts = products.filter(p => p.isNew || p.isSale).slice(0, 4);
 
-  if (loading) return <div className="py-20 text-center">Loading products...</div>;
+  if (loading) return <div className="py-20"><div className="container mx-auto px-6"><Skeleton count={4} lines={2} /></div></div>;
 
   return (
     <section className="py-20 bg-white">

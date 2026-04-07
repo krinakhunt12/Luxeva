@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { getProducts } from '../features/products/api/productsApi';
 import { ProductCard } from '../components/ProductCard';
+import Skeleton from '../components/ui/Skeleton';
 
 // map URL collection slugs to backend category values
 const CATEGORY_MAP: Record<string, string[]> = {
@@ -104,7 +105,7 @@ const Collections = () => {
     return filteredProducts.slice(start, start + itemsPerPage);
   }, [filteredProducts, currentPage]);
 
-  if (loading) return <div className="pt-32 text-center">Loading products...</div>;
+  if (loading) return <div className="pt-32"><div className="container mx-auto px-6"><Skeleton count={6} lines={1} /></div></div>;
 
   return (
     <div className="pt-32 pb-20 bg-bg min-h-screen">

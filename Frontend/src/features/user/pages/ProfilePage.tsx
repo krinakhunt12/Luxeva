@@ -1,10 +1,11 @@
 import React from 'react';
 import { useCurrentUser } from '../hooks/useUser';
+import Skeleton from '../../../../components/ui/Skeleton';
 
 export const ProfilePage: React.FC = () => {
   const { data: user, isLoading, isError, error } = useCurrentUser();
 
-  if (isLoading) return <div className="p-6">Loading profile...</div>;
+  if (isLoading) return <div className="p-6"><Skeleton lines={3} count={1} /></div>;
   if (isError) return <div className="p-6 text-red-600">{(error as Error).message}</div>;
 
   return (

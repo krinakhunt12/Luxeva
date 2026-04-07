@@ -1,12 +1,13 @@
 import React from 'react';
 import { useOrders, useUpdateOrderStatus } from '../../orders/hooks/useOrders';
 import { showError, showSuccess } from '../../../utils/toastService';
+import Skeleton from '../../../components/ui/Skeleton';
 
 export default function OrdersManagement() {
   const { data: orders = [], isLoading } = useOrders();
   const updateStatus = useUpdateOrderStatus();
 
-  if (isLoading) return <div className="p-8 italic font-serif">Loading instances of order...</div>;
+  if (isLoading) return <div className="p-8"><Skeleton count={3} lines={2} /></div>;
 
   return (
     <div className="space-y-6">

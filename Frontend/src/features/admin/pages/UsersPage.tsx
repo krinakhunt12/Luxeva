@@ -1,10 +1,11 @@
 import React from 'react';
 import { useUsers } from '../../user/hooks/useUser';
+import Skeleton from '../../../components/ui/Skeleton';
 
 export default function UsersManagement() {
   const { data: users = [], isLoading } = useUsers();
 
-  if (isLoading) return <div className="p-8">Loading users...</div>;
+  if (isLoading) return <div className="p-8"><Skeleton count={4} lines={2} /></div>;
 
   return (
     <div className="space-y-6">
