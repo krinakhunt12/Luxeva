@@ -1,5 +1,6 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
+import { showSuccess, showError } from '../utils/toastService';
 import { motion } from 'motion/react';
 import { User, Package, Heart, LogOut, Settings, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -48,10 +49,10 @@ export const Account = () => {
       if (form.email) payload.email = form.email;
       if (form.mobile) payload.mobile = form.mobile;
       await (updateUserProfile ? updateUserProfile(payload) : Promise.reject(new Error('No update handler')));
-      alert('Profile updated');
+      showSuccess('Profile updated');
       setEditing(false);
     } catch (err: any) {
-      alert(err.message || 'Update failed');
+      showError(err.message || 'Update failed');
     }
   };
 
@@ -60,13 +61,13 @@ export const Account = () => {
     try {
       const ok = await (deleteAccount ? deleteAccount() : Promise.reject(new Error('No delete handler')));
       if (ok) {
-        alert('Account deleted');
+        showSuccess('Account deleted');
         navigate('/');
       } else {
-        alert('Failed to delete account');
+        showError('Failed to delete account');
       }
     } catch (err: any) {
-      alert(err.message || 'Delete failed');
+      showError(err.message || 'Delete failed');
     }
   };
 

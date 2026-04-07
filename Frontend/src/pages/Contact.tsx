@@ -3,20 +3,12 @@ import { useMutation } from '@tanstack/react-query';
 import { showSuccess, showError } from '../utils/toastService';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import useContact from '../features/contact/hooks/useContact';
 
-const sendMessage = async (payload: any) => {
-  const res = await fetch('http://localhost:4000/api/contact', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) throw new Error('Failed to send message');
-  return res.json();
-};
 
 export default function Contact() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', subject: 'General Inquiry', message: '' });
-  const { mutate, isLoading, isError, isSuccess } = useMutation({ mutationFn: sendMessage, onSuccess: () => showSuccess('Message sent'), onError: (err: any) => showError(err?.message || 'Send failed') });
+  const { mutate, isLoading, isError, isSuccess } = useContact();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -25,7 +17,7 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate(form);
+    mutate(form);
   };
 
   return (

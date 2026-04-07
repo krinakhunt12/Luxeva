@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, Menu, X, ChevronDown, Plus, Minus, Trash2, User, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useShop } from '../context/ShopContext';
+import useOffers from '../features/offers/hooks/useOffers';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -12,27 +13,16 @@ function cn(...inputs: ClassValue[]) {
 
 const AnnouncementBar = () => {
   const [bannerText, setBannerText] = useState<string | null>(null);
-
+  const { data: offers = [] } = useOffers();
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch('/api/offers');
-        if (!res.ok) return;
-        const offers = await res.json();
-        const now = Date.now();
-        const soon = offers.find((o: any) => o.active && o.endsAt && (new Date(o.endsAt).getTime() - now) <= 48 * 60 * 60 * 1000 && (new Date(o.endsAt).getTime() - now) > 0);
-        if (mounted && soon) {
-          const msLeft = new Date(soon.endsAt).getTime() - now;
-          const hours = Math.ceil(msLeft / (1000 * 60 * 60));
-          setBannerText(`${soon.title} — ends in ${hours} hour${hours > 1 ? 's' : ''}! ${soon.discountType === 'percentage' ? soon.amount + '% off' : 'Flat ₹' + soon.amount + ' off'}`);
-        }
-      } catch (err) {
-        // ignore
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
+    const now = Date.now();
+    const soon = (offers || []).find((o: any) => o.active && o.endsAt && (new Date(o.endsAt).getTime() - now) <= 48 * 60 * 60 * 1000 && (new Date(o.endsAt).getTime() - now) > 0);
+    if (soon) {
+      const msLeft = new Date(soon.endsAt).getTime() - now;
+      const hours = Math.ceil(msLeft / (1000 * 60 * 60));
+      setBannerText(`${soon.title} — ends in ${hours} hour${hours > 1 ? 's' : ''}! ${soon.discountType === 'percentage' ? soon.amount + '% off' : 'Flat ₹' + soon.amount + ' off'}`);
+    }
+  }, [offers]);
 
   const content = bannerText || 'Free shipping on orders over ₹2000 • New Arrivals: The Spring Collection is here • 10% off your first order with code LUXEVA10';
 

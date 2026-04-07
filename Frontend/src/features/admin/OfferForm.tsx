@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { showSuccess, showError } from '../../utils/toastService';
+import { useCreateOffer } from './hooks/useAdminOffers';
 
 const OfferForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
-  const queryClient = useQueryClient();
+  const createMut = useCreateOffer();
   const [title, setTitle] = useState('');
   const [appliesTo, setAppliesTo] = useState<'all' | 'product'>('all');
   const [productId, setProductId] = useState('');
@@ -17,33 +18,13 @@ const OfferForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     setAmount(10);
   };
 
-  const handleCreate = async () => {
-    const token = localStorage.getItem('luxeva_token');
+  const handleCreate = () => {
     const payload: any = { title, appliesTo, discountType, amount: Number(amount), active: true };
     if (appliesTo === 'product' && productId) payload.productId = productId;
-
-    const res = await fetch('/api/offers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
-      body: JSON.stringify(payload),
+    createMut.mutate(payload, {
+      onError: (err: any) => showError(err?.message || 'Failed to create offer'),
+      onSuccess: () => { reset(); if (onCreated) onCreated(); showSuccess('Offer created'); }
     });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      alert(err.message || 'Failed to create offer');
-      return;
-    }
-
-    try {
-      await queryClient.invalidateQueries({ queryKey: ['offers'] });
-      await queryClient.invalidateQueries({ queryKey: ['products'] });
-    } catch (e) {
-      // ignore
-    }
-
-    reset();
-    if (onCreated) onCreated();
-    alert('Offer created');
   };
 
   return (

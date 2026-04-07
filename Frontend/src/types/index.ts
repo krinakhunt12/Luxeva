@@ -8,6 +8,9 @@ export interface Product {
   category: string;
   subCategory?: string;
   images: string[];
+  imagesByColor?: Record<string, string[]>;
+  // optional stock per color and size: { [colorName]: { [size]: number } }
+  stockByVariant?: Record<string, Record<string, number>>;
   description: string;
   variants?: {
     colors: { name: string; hex: string }[];

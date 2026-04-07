@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { Edit3, Pause, Play, Trash2, Calendar, Tag } from 'lucide-react';
+import useOffers from '../offers/hooks/useOffers';
+import { useDeleteOffer, useUpdateOffer } from './hooks/useAdminOffers';
 
 type Offer = {
   _id: string;
@@ -14,37 +16,15 @@ type Offer = {
   endsAt?: string;
 };
 
-const fetchOffers = async (): Promise<Offer[]> => {
-  const res = await fetch('/api/offers');
-  if (!res.ok) throw new Error('Failed to load offers');
-  return res.json();
-};
 
 const OffersList: React.FC = () => {
   const queryClient = useQueryClient();
-  const { data: offers = [], isLoading } = useQuery({ queryKey: ['offers'], queryFn: fetchOffers });
+  const { data: offers = [], isLoading } = useOffers();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formState, setFormState] = useState<any>({});
 
-  const deleteMut = useMutation({
-    mutationFn: async (id: string) => {
-      const token = localStorage.getItem('luxeva_token');
-      const res = await fetch(`/api/offers/${id}`, { method: 'DELETE', headers: { Authorization: token ? `Bearer ${token}` : '' } });
-      if (!res.ok) throw new Error('Delete failed');
-      return res.json();
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['offers'] }),
-  });
-
-  const updateMut = useMutation({
-    mutationFn: async ({ id, payload }: any) => {
-      const token = localStorage.getItem('luxeva_token');
-      const res = await fetch(`/api/offers/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' }, body: JSON.stringify(payload) });
-      if (!res.ok) throw new Error('Update failed');
-      return res.json();
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['offers'] }),
-  });
+  const deleteMut = useDeleteOffer();
+  const updateMut = useUpdateOffer();
 
   if (isLoading) return (
     <div className="space-y-4">

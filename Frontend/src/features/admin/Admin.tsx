@@ -3,15 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Product, User } from '../../types';
 import { ProductCard } from '../../components/ProductCard';
 import { LayoutDashboard, Package, Users } from 'lucide-react';
-import { getProductsPaged } from '../products/api/productsApi';
+import { getProductsPaged, createProduct as apiCreateProduct } from '../products/api/productsApi';
+import { useUsers } from '../user/hooks/useUser';
 import OfferForm from './OfferForm';
 import OffersList from './OffersList';
 
-const fetchUsers = async (): Promise<User[]> => {
-  const res = await fetch('/api/users');
-  if (!res.ok) throw new Error('Failed to load users');
-  return res.json();
-};
+// users are loaded via useUsers hook
 
 export const Admin = () => {
   const queryClient = useQueryClient();
@@ -28,17 +25,10 @@ export const Admin = () => {
     keepPreviousData: true
   });
   const products: Product[] = (paged && (paged as any).products) || [];
-  const { data: users = [], isLoading: usersLoading } = useQuery({ queryKey: ['users'], queryFn: fetchUsers });
+  const { data: users = [], isLoading: usersLoading } = useUsers();
 
   // Example mutation to create product (requires auth token on backend)
-  const createProduct = useMutation({
-    mutationFn: async (payload: Partial<Product>) => {
-      const res = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      if (!res.ok) throw new Error('Create failed');
-      return res.json();
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
-  });
+  const createProduct = useMutation({ mutationFn: (payload: Partial<Product>) => apiCreateProduct(payload as any), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }) });
 
   return (
     <div className="pt-32 pb-20 bg-bg min-h-screen">

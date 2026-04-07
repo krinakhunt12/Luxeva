@@ -46,6 +46,11 @@ men.forEach((name, i) => {
         category: 'men',
         subCategory: i % 3 === 0 ? 'tops' : (i % 3 === 1 ? 'outerwear' : 'trousers'),
         images: [],
+        imagesByColor: {
+            Black: [],
+            Navy: []
+        },
+        stockByVariant: { Black: { S: 10, M: 15, L: 5, XL: 2 }, Navy: { S: 8, M: 12, L: 4, XL: 1 } },
         description: `${name} — crafted with attention to detail for everyday wear.`,
         variants: buildVariants('men'),
         inStock: true,
@@ -62,6 +67,11 @@ women.forEach((name, i) => {
         category: 'women',
         subCategory: i % 3 === 0 ? 'skirts' : (i % 3 === 1 ? 'knitwear' : 'dresses'),
         images: [],
+        imagesByColor: {
+            Cream: [],
+            Black: []
+        },
+        stockByVariant: { Cream: { XS: 5, S: 10, M: 7, L: 3 }, Black: { XS: 4, S: 8, M: 6, L: 2 } },
         description: `${name} — elevated essentials with a refined finish.`,
         variants: buildVariants('women'),
         isNew: i < 4,
@@ -78,6 +88,8 @@ accessories.forEach((name, i) => {
         category: 'accessories',
         subCategory: i % 2 === 0 ? 'bags' : 'small-leather-goods',
         images: [],
+        imagesByColor: { Tan: [] },
+        stockByVariant: { Tan: { 'One Size': 30 } },
         description: `${name} — a thoughtful finishing touch to any outfit.`,
         variants: buildVariants('accessories'),
         inStock: true,

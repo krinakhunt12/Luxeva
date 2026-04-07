@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiFetch, removeToken } from '../utils/apiClient';
+import useOffers from '../features/offers/hooks/useOffers';
 import { Product, CartItem, User } from '../types';
 
 interface ShopContextType {
@@ -54,7 +56,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [offers, setOffers] = useState<any[]>([]);
+  const { data: offers = [], isLoading: offersLoading } = useOffers();
 
   useEffect(() => {
     // Listen for local storage changes (login/logout from other tabs or same tab)
@@ -82,20 +84,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch('/api/offers');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (mounted) setOffers(Array.isArray(data) ? data : []);
-      } catch (e) {
-        // ignore
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
 
   useEffect(() => {
     localStorage.setItem('luxeva_cart', JSON.stringify(cart));
@@ -139,7 +127,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     localStorage.removeItem('luxeva_user');
-    localStorage.removeItem('luxeva_token');
+    removeToken();
     setUser(null);
     setIsAdmin(false);
   };
@@ -151,16 +139,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const id = current.id || current.uid || current._id;
     if (!id) throw new Error('User id not found');
     const token = localStorage.getItem('luxeva_token');
-    const res = await fetch(`/api/users/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
-      body: JSON.stringify(updates),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Failed to update profile');
-    }
-    const updatedRaw = await res.json();
+    const updatedRaw = await apiFetch(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(updates) });
     const displayName = updatedRaw.displayName || updatedRaw.name || `${updatedRaw.firstName || ''} ${updatedRaw.lastName || ''}`.trim();
     const updated = { ...updatedRaw, displayName };
     setUser(updated as User);
@@ -178,8 +157,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const id = current.id || current.uid || current._id;
     if (!id) throw new Error('User id not found');
     const token = localStorage.getItem('luxeva_token');
-    const res = await fetch(`/api/users/${id}`, { method: 'DELETE', headers: { Authorization: token ? `Bearer ${token}` : '' } });
-    if (!res.ok) return false;
+    const res = await apiFetch(`/api/users/${id}`, { method: 'DELETE' }).catch(() => null);
+    if (!res) return false;
     // clear local data
     logout();
     return true;

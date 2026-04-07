@@ -1,23 +1,35 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as api from '../api/productsApi';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../api/productsApi';
 import { Product } from '../types';
 import { showSuccess, showError } from '../../../utils/toastService';
 
-export function useProducts() {
-  return useQuery({ queryKey: ['products'], queryFn: getProducts }) as ReturnType<typeof useQuery>;
-}
 
-export function useCreateProduct(): ReturnType<typeof useMutation> {
-  const qc = useQueryClient();
-  return useMutation({ mutationFn: (payload: FormData) => createProduct(payload), onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['products'] }); showSuccess('Product created'); }, onError: (err: any) => showError(err?.message || 'Create product failed') }) as any;
-}
+export const useProducts = () => {
+  return useQuery({ queryKey: ['products'], queryFn: api.getProducts });
+};
 
-export function useUpdateProduct(): ReturnType<typeof useMutation> {
-  const qc = useQueryClient();
-  return useMutation({ mutationFn: ({ id, payload }: { id: string; payload: FormData }) => updateProduct(id, payload), onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['products'] }); showSuccess('Product updated'); }, onError: (err: any) => showError(err?.message || 'Update product failed') }) as any;
-}
+export const usePagedProducts = (page = 1, limit = 12, category?: string) => {
+  return useQuery({ queryKey: ['products', page, category], queryFn: () => api.getProductsPaged(page, limit, category), keepPreviousData: true });
+};
 
-export function useDeleteProduct(): ReturnType<typeof useMutation> {
+export const useProductBySlug = (slug: string) => {
+  return useQuery({ queryKey: ['product', slug], queryFn: () => api.getProductBySlug(slug), enabled: !!slug });
+};
+
+export const useCreateProduct = () => {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: (id: string) => deleteProduct(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['products'] }); showSuccess('Product deleted'); }, onError: (err: any) => showError(err?.message || 'Delete product failed') }) as any;
-}
+  return useMutation({ mutationFn: api.createProduct, onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] }) });
+};
+
+export const useUpdateProduct = () => {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: ({ id, payload }: any) => api.updateProduct(id, payload), onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] }) });
+};
+
+export const useDeleteProduct = () => {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (id: string) => api.deleteProduct(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] }) });
+};
+
+export default useProducts;

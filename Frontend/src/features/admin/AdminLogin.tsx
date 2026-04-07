@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import { useLogin } from '../auth/hooks/useAuth';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -12,27 +13,19 @@ export default function AdminLogin() {
   const location = useLocation();
   const fromPath = (location.state as any)?.from || '/admin';
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const loginMutation = useLogin();
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    try {
-      const res = await fetch('http://localhost:4000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to login');
-      if (data.user?.role !== 'admin') throw new Error('Not authorized as admin');
-      localStorage.setItem('luxeva_token', data.token);
-      localStorage.setItem('luxeva_user', JSON.stringify(data.user));
-      navigate(fromPath);
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
+    loginMutation.mutate({ email, password, remember: true }, {
+      onError: (err: any) => { setError(err?.message || 'Login failed'); setLoading(false); },
+      onSuccess: (data: any) => {
+        setLoading(false);
+        if (data.user?.role !== 'admin') { setError('Not authorized as admin'); return; }
+        navigate(fromPath);
+      }
+    });
   };
 
   return (

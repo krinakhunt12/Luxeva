@@ -3,11 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, ChevronDown, Check, Ruler, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getProductBySlug } from '../features/products/api/productsApi';
+import useProducts from '../features/products/hooks/useProducts';
 import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import Skeleton from '../components/ui/Skeleton';
+import { deriveImagesByColor } from '../utils/productUtils';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -50,6 +52,21 @@ const ProductDetail = () => {
     };
     fetchProduct();
   }, [slug]);
+
+  const { data: products = [] } = useProducts();
+
+  // images currently shown in gallery for selected color (fallback to product.images)
+  let currentImages: string[] = [];
+  if (product) {
+    currentImages = product.imagesByColor?.[selectedColor] || (product as any).variantImages?.[selectedColor] || [];
+    // if backend doesn't provide color-specific images, try deriving from filenames
+    if ((!currentImages || currentImages.length === 0) && product.images) {
+      const derived = deriveImagesByColor(product);
+      if (derived[selectedColor] && derived[selectedColor].length) currentImages = derived[selectedColor];
+      else if (derived.__default && derived.__default.length) currentImages = derived.__default;
+    }
+    if (!currentImages || currentImages.length === 0) currentImages = product.images || [];
+  }
 
   // Poll for product changes / deletion while on the page.
   useEffect(() => {
@@ -104,12 +121,12 @@ const ProductDetail = () => {
 
   const nextImage = () => {
     setDirection(1);
-    setSelectedImage((prev) => (prev + 1) % product.images.length);
+    setSelectedImage((prev) => (prev + 1) % Math.max(1, currentImages.length));
   };
 
   const prevImage = () => {
     setDirection(-1);
-    setSelectedImage((prev) => (prev - 1 + product.images.length) % product.images.length);
+    setSelectedImage((prev) => (prev - 1 + Math.max(1, currentImages.length)) % Math.max(1, currentImages.length));
   };
 
   const variants = {
@@ -133,12 +150,17 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    if (!product.inStock) return;
+    const available = product?.stockByVariant?.[selectedColor]?.[selectedSize] ?? product?.stock ?? (product?.inStock ? 1 : 0);
+    if (!available || available < 1) return;
     addToCart(product, selectedColor, selectedSize, quantity);
   };
 
-  const relatedProducts = products
-    .filter(p => p.category === product.category && p.id !== product.id)
+  const availableStock = product?.stockByVariant?.[selectedColor]?.[selectedSize] ?? product?.stock ?? 0;
+
+  const discountPercent = product?.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : (product?.salePrice ? Math.round(((product.price - product.salePrice) / product.price) * 100) : 0);
+
+  const relatedProducts = (products || [])
+    .filter((p: any) => p.category === product.category && (p.id || p._id) !== (product.id || product._id))
     .slice(0, 4);
 
   const accordions = [
@@ -163,7 +185,7 @@ const ProductDetail = () => {
           {/* Gallery */}
           <div className="lg:col-span-7 flex flex-col md:flex-row gap-4">
             <div className="order-2 md:order-1 flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto no-scrollbar">
-              {product.images.map((img, i) => (
+              {currentImages.map((img, i) => (
                 <button 
                   key={i}
                   onClick={() => {
@@ -175,7 +197,7 @@ const ProductDetail = () => {
                     selectedImage === i ? "border-primary opacity-100" : "border-transparent opacity-50"
                   )}
                 >
-                  <img src={img} alt={`${product.name} ${i}`} className="w-full h-full object-cover" />
+                    <img src={img} alt={`${product.name} ${i}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -193,14 +215,14 @@ const ProductDetail = () => {
                     opacity: { duration: 0.4 },
                     scale: { duration: 0.6 }
                   }}
-                  src={product.images[selectedImage]} 
+                  src={currentImages[selectedImage]}
                   alt={product.name} 
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               </AnimatePresence>
 
               {/* Slider Controls */}
-              {product.images.length > 1 && (
+              {currentImages.length > 1 && (
                 <>
                   <button 
                     onClick={prevImage}
@@ -219,7 +241,7 @@ const ProductDetail = () => {
 
               {/* Image Indicators */}
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
-                {product.images.map((_, i) => (
+                {currentImages.map((_, i) => (
                   <button 
                     key={i}
                     onClick={() => {
@@ -256,13 +278,18 @@ const ProductDetail = () => {
                 </button>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-2xl font-light tracking-tight">₹{product.price}</span>
-                {product.originalPrice && (
-                  <span className="text-lg text-muted line-through font-light">₹{product.originalPrice}</span>
-                )}
+                <div>
+                  <div className="text-2xl font-light tracking-tight">₹{product.price}</div>
+                  {product.originalPrice && (
+                    <div className="text-lg text-muted line-through font-light">MRP ₹{product.originalPrice} • {discountPercent}% off</div>
+                  )}
+                  {product.salePrice && (
+                    <div className="text-sm text-muted">Sale Price: ₹{product.salePrice}</div>
+                  )}
+                </div>
               </div>
               <p className="text-muted text-sm leading-relaxed italic font-serif max-w-md">
-                {product.description.split('.')[0]}.
+                {(product.description || '').split('.')[0]}{product.description ? '.' : ''}
               </p>
             </div>
 
@@ -274,10 +301,10 @@ const ProductDetail = () => {
                   <span>Color: <span className="text-muted">{selectedColor}</span></span>
                 </div>
                 <div className="flex gap-3">
-                  {product.variants.colors.map(color => (
+                  {(product.variants?.colors || []).map(color => (
                     <button 
                       key={color.name}
-                      onClick={() => setSelectedColor(color.name)}
+                      onClick={() => { setSelectedColor(color.name); setSelectedImage(0); }}
                       className={cn(
                         "w-10 h-10 rounded-full border-2 p-1 transition-all duration-300",
                         selectedColor === color.name ? "border-primary scale-110" : "border-transparent"
@@ -301,7 +328,7 @@ const ProductDetail = () => {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {product.variants.sizes.map(size => (
+                  {(product.variants?.sizes || []).map(size => (
                     <button 
                       key={size}
                       onClick={() => setSelectedSize(size)}
@@ -319,17 +346,20 @@ const ProductDetail = () => {
               {/* Quantity */}
               <div className="space-y-4">
                 <span className="text-[10px] uppercase tracking-widest font-bold">Quantity</span>
+                <div className="text-sm text-muted">{availableStock > 0 ? `${availableStock} left in selected color/size` : 'Out of stock for selected color/size'}</div>
                 <div className="flex items-center border border-accent w-max">
                   <button 
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     className="p-4 hover:bg-accent transition-colors"
+                    disabled={quantity <= 1}
                   >
                     <Minus size={16} />
                   </button>
                   <span className="px-8 text-sm font-bold">{quantity}</span>
                   <button 
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() => setQuantity(Math.min(availableStock || quantity + 1, quantity + 1))}
                     className="p-4 hover:bg-accent transition-colors"
+                    disabled={availableStock <= quantity}
                   >
                     <Plus size={16} />
                   </button>
@@ -393,9 +423,10 @@ const ProductDetail = () => {
             <h2 className="text-4xl md:text-5xl font-light tracking-tight italic font-serif">Complete The Look</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {relatedProducts.map(p => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+            {relatedProducts.map((p, i) => {
+              const key = p.id ?? (p as any)._id ?? p.slug ?? `${p.name}-${i}`;
+              return <ProductCard key={key} product={p} />;
+            })}
           </div>
         </div>
       </div>
