@@ -40,18 +40,29 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return null;
     }
   });
+  const getUserId = (u: User | null | undefined) => {
+    const current = u || user;
+    return current ? (current.id || (current as any)._id || (current as any).uid) : undefined;
+  };
+
+  const storageKey = (base: string, u?: User | null) => {
+    const id = getUserId(u);
+    return id ? `${base}_${id}` : `${base}_guest`;
+  };
   const [isAdmin, setIsAdmin] = useState(() => {
     // Determine admin from stored user role provided by backend
     return user?.role === 'admin';
   });
   const [loading, setLoading] = useState(false);
   const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('luxeva_cart');
+    const key = storageKey('luxeva_cart');
+    const saved = localStorage.getItem(key);
     return saved ? JSON.parse(saved) : [];
   });
 
   const [wishlist, setWishlist] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('luxeva_wishlist');
+    const key = storageKey('luxeva_wishlist');
+    const saved = localStorage.getItem(key);
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -84,15 +95,37 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
+  // When the user changes (login/logout/switch), load their cart and wishlist
+  useEffect(() => {
+    const cartKey = storageKey('luxeva_cart', user);
+    const wishKey = storageKey('luxeva_wishlist', user);
+    try {
+      const savedCart = localStorage.getItem(cartKey);
+      setCart(savedCart ? JSON.parse(savedCart) : []);
+    } catch (e) {
+      setCart([]);
+    }
+    try {
+      const savedWish = localStorage.getItem(wishKey);
+      setWishlist(savedWish ? JSON.parse(savedWish) : []);
+    } catch (e) {
+      setWishlist([]);
+    }
+  }, [user]);
+
 
   useEffect(() => {
-    localStorage.setItem('luxeva_cart', JSON.stringify(cart));
-  }, [cart]);
+    try {
+      const key = storageKey('luxeva_cart', user);
+      localStorage.setItem(key, JSON.stringify(cart));
+    } catch (e) {}
+  }, [cart, user]);
 
   const clearCart = () => {
     setCart([]);
     try {
-      localStorage.setItem('luxeva_cart', JSON.stringify([]));
+      const key = storageKey('luxeva_cart', user);
+      localStorage.setItem(key, JSON.stringify([]));
     } catch (e) {
       // ignore
     }
@@ -101,8 +134,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    localStorage.setItem('luxeva_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+    try {
+      const key = storageKey('luxeva_wishlist', user);
+      localStorage.setItem(key, JSON.stringify(wishlist));
+    } catch (e) {}
+  }, [wishlist, user]);
 
   const addToCart = (product: Product, color: string, size: string, quantity: number) => {
     setCart(prev => {
@@ -122,7 +158,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return [...prev, { ...product, selectedColor: color, selectedSize: size, quantity }];
     });
-    setIsCartOpen(true);
   };
 
   const logout = () => {
@@ -130,6 +165,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     removeToken();
     setUser(null);
     setIsAdmin(false);
+    // clear UI state
+    setCart([]);
+    setWishlist([]);
   };
 
   const updateUserProfile = async (updates: Partial<User>) => {

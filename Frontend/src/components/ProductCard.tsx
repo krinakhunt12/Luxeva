@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Eye, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Product } from '../types';
+import { useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -16,6 +17,7 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const [showQuickView, setShowQuickView] = useState(false);
   const { toggleWishlist, isInWishlist, addToCart } = useShop();
   const inWishlist = isInWishlist((product as any).id || (product as any)._id);
+  const navigate = useNavigate();
   const available = (product as any).inStock ?? (((product as any).stock ?? 0) > 0);
 
   const handleQuickAdd = (e: React.MouseEvent) => {
@@ -26,6 +28,7 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     const sizes = (product as any).variants?.sizes;
     if (!colors?.length || !sizes?.length) return;
     addToCart(product, colors[0].name, sizes[0], 1);
+    navigate('/cart');
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -47,6 +50,7 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       return;
     }
     addToCart(product, colors[0].name, sizes[0], 1);
+    navigate('/cart');
   };
 
   const openQuickView = (e: React.MouseEvent) => {

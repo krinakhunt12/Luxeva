@@ -31,24 +31,47 @@ const getProducts = async(req, res) => {
             const offers = await Offer.find({ active: true }).lean();
 
             const activeOffers = offers.filter(o => {
+                // skip inactive by admin
+                if (o.status && o.status !== 'active') return false;
                 if (o.startsAt && new Date(o.startsAt) > now) return false;
                 if (o.endsAt && new Date(o.endsAt) < now) return false;
-                return o.active !== false;
+                return true;
             });
 
             products = products.map(p => {
-                const matched = activeOffers.find(o => o.appliesTo === 'all' || (o.appliesTo === 'product' && String(o.productId) === String(p._id)));
-                if (!matched) return p;
-                const copy = {...p };
-                const amt = Number(matched.amount || 0);
-                if (matched.discountType === 'fixed') {
-                    copy.originalPrice = copy.price;
-                    copy.price = Math.max(0, copy.price - amt);
-                } else {
-                    copy.originalPrice = copy.price;
-                    copy.price = Math.max(0, Math.round(copy.price * (1 - amt / 100)));
+                // find all offers that apply to this product
+                const applicable = activeOffers.filter(o => {
+                    if (o.appliesTo === 'all') return true;
+                    // legacy single productId
+                    if (o.productId && String(o.productId) === String(p._id)) return true;
+                    if (Array.isArray(o.productIds) && o.productIds.find(id => String(id) === String(p._id))) return true;
+                    return false;
+                });
+                if (!applicable || applicable.length === 0) return p;
+
+                // choose best offer by maximum saving amount
+                let best = null;
+                let bestSaving = 0;
+                for (const o of applicable) {
+                    const amt = Number(o.amount || 0);
+                    let saving = 0;
+                    if (o.discountType === 'fixed') saving = amt;
+                    else saving = (p.price || 0) * (amt / 100);
+                    if (saving > bestSaving) {
+                        bestSaving = saving;
+                        best = o;
+                    }
                 }
-                copy.appliedOffer = { id: matched._id, title: matched.title, discountType: matched.discountType, amount: matched.amount };
+
+                if (!best) return p;
+                const copy = {...p };
+                copy.originalPrice = copy.price;
+                if (best.discountType === 'fixed') {
+                    copy.price = Math.max(0, copy.price - Number(best.amount || 0));
+                } else {
+                    copy.price = Math.max(0, Math.round(copy.price * (1 - Number(best.amount || 0) / 100)));
+                }
+                copy.appliedOffer = { id: best._id, title: best.title, discountType: best.discountType, amount: best.amount, bannerImage: best.bannerImage };
                 return copy;
             });
         } catch (e) {

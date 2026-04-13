@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { getProducts } from '../features/products/api/productsApi';
 import { ProductCard } from '../components/ProductCard';
@@ -13,6 +13,7 @@ const CATEGORY_MAP: Record<string, string[]> = {
 
 const Collections = () => {
   const { category } = useParams<{ category?: string }>();
+  const navigate = useNavigate();
   // filters are shown inline on the page now
   const [sortBy, setSortBy] = useState('featured');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
@@ -156,7 +157,10 @@ const Collections = () => {
                 <h4 className="text-[10px] uppercase tracking-widest font-bold mb-6 text-muted">Category</h4>
                 <div className="space-y-4">
                   <button 
-                    onClick={() => setSelectedSubCategory(null)}
+                    onClick={() => {
+                      if (category) navigate('/collections');
+                      else setSelectedSubCategory(null);
+                    }}
                     className={`block text-xs uppercase tracking-widest ${!selectedSubCategory ? 'text-gold font-bold' : 'text-primary'}`}
                   >
                     All

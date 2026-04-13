@@ -12,7 +12,7 @@ import { Cart, Wishlist } from './pages/CartWishlist';
 import Checkout from './pages/Checkout';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import { Search } from './pages/StaticPages';
+import { Search, ShippingPolicy, ReturnsPolicy, SizeGuidePage, FAQ } from './pages/StaticPages';
 import { Login, SignUp } from './features/auth/Auth';
 import { Account } from './pages/Account';
 import { OrdersPage } from './features/orders/pages/OrdersPage';
@@ -100,6 +100,10 @@ export default function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/shipping" element={<ShippingPolicy />} />
+            <Route path="/returns" element={<ReturnsPolicy />} />
+            <Route path="/size-guide" element={<SizeGuidePage />} />
+            <Route path="/faq" element={<FAQ />} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

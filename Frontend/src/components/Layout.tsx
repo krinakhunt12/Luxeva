@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ScrollToTop from './ScrollToTop';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, Menu, X, ChevronDown, Plus, Minus, Trash2, User, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -236,116 +237,7 @@ const Header = () => {
   );
 };
 
-const CartDrawer = () => {
-  const { isCartOpen, setIsCartOpen, cart, removeFromCart, updateCartQuantity, cartTotal } = useShop();
-
-  return (
-    <AnimatePresence>
-      {isCartOpen && (
-        <>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsCartOpen(false)}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
-          />
-          <motion.div 
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-bg z-[110] flex flex-col shadow-2xl"
-          >
-            <div className="p-6 border-b border-accent flex justify-between items-center">
-              <h2 className="text-sm uppercase tracking-[0.2em] font-bold">Your Cart</h2>
-              <button onClick={() => setIsCartOpen(false)}>
-                <X size={20} strokeWidth={1.5} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                  <ShoppingBag size={48} strokeWidth={1} className="text-muted" />
-                  <p className="text-muted text-sm italic">Your cart is currently empty.</p>
-                  <button 
-                    onClick={() => setIsCartOpen(false)}
-                    className="bg-primary text-white px-8 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-gold transition-colors"
-                  >
-                    Start Shopping
-                  </button>
-                </div>
-              ) : (
-                cart.map((item) => (
-                  <div key={`${item.id}-${item.selectedColor}-${item.selectedSize}`} className="flex gap-4">
-                    <div className="w-24 aspect-[3/4] bg-accent overflow-hidden">
-                      <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-between py-1">
-                      <div>
-                        <div className="flex justify-between items-start">
-                          <h3 className="text-xs uppercase tracking-wider font-bold">{item.name}</h3>
-                          <button 
-                            onClick={() => removeFromCart(item.id, item.selectedColor, item.selectedSize)}
-                            className="text-muted hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                        <p className="text-[10px] text-muted mt-1 uppercase tracking-widest">
-                          {item.selectedColor} / {item.selectedSize}
-                        </p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center border border-accent">
-                          <button 
-                            onClick={() => updateCartQuantity(item.id, item.selectedColor, item.selectedSize, item.quantity - 1)}
-                            className="p-1 hover:bg-accent"
-                          >
-                            <Minus size={12} />
-                          </button>
-                          <span className="px-3 text-xs">{item.quantity}</span>
-                          <button 
-                            onClick={() => updateCartQuantity(item.id, item.selectedColor, item.selectedSize, item.quantity + 1)}
-                            className="p-1 hover:bg-accent"
-                          >
-                            <Plus size={12} />
-                          </button>
-                        </div>
-                        <span className="text-xs font-medium">₹{item.price * item.quantity}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {cart.length > 0 && (
-              <div className="p-6 border-t border-accent space-y-4">
-                <div className="flex justify-between text-sm uppercase tracking-widest font-bold">
-                  <span>Subtotal</span>
-                  <span>₹{cartTotal}</span>
-                </div>
-                <p className="text-[10px] text-muted italic">Shipping and taxes calculated at checkout.</p>
-                <Link 
-                  to="/cart" 
-                  onClick={() => setIsCartOpen(false)}
-                  className="block w-full text-center border border-primary py-4 text-[10px] uppercase tracking-widest font-bold hover:bg-primary hover:text-white transition-all"
-                >
-                  View Full Cart
-                </Link>
-                <button className="w-full bg-primary text-white py-4 text-[10px] uppercase tracking-widest font-bold hover:bg-gold transition-colors">
-                  Checkout
-                </button>
-              </div>
-            )}
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-};
+/* Cart drawer removed — cart now uses a dedicated `/cart` page. */
 
 const Footer = () => (
   <footer className="bg-bg border-t border-accent pt-20 pb-10">
@@ -374,9 +266,11 @@ const Footer = () => (
       <div>
         <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-8">Support</h4>
         <ul className="space-y-4">
-          {['Shipping Policy', 'Returns & Exchanges', 'Size Guide', 'Contact Us', 'FAQ'].map(link => (
-            <li key={link}><Link to="/contact" className="text-xs text-muted hover:text-primary transition-colors">{link}</Link></li>
-          ))}
+          <li><Link to="/shipping" className="text-xs text-muted hover:text-primary transition-colors">Shipping Policy</Link></li>
+          <li><Link to="/returns" className="text-xs text-muted hover:text-primary transition-colors">Returns & Exchanges</Link></li>
+          <li><Link to="/size-guide" className="text-xs text-muted hover:text-primary transition-colors">Size Guide</Link></li>
+          <li><Link to="/contact" className="text-xs text-muted hover:text-primary transition-colors">Contact Us</Link></li>
+          <li><Link to="/faq" className="text-xs text-muted hover:text-primary transition-colors">FAQ</Link></li>
         </ul>
       </div>
 
@@ -408,9 +302,9 @@ const Footer = () => (
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       <AnnouncementBar />
       <Header />
-      <CartDrawer />
       <main className="flex-1">
         {children}
       </main>

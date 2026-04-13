@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, ChevronDown, Check, Ruler, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getProductBySlug } from '../features/products/api/productsApi';
@@ -18,6 +18,7 @@ function cn(...inputs: ClassValue[]) {
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { addToCart, toggleWishlist, isInWishlist } = useShop();
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const [direction, setDirection] = useState(0);
   const [selectedColor, setSelectedColor] = useState('');
@@ -153,6 +154,7 @@ const ProductDetail = () => {
     const available = product?.stockByVariant?.[selectedColor]?.[selectedSize] ?? product?.stock ?? (product?.inStock ? 1 : 0);
     if (!available || available < 1) return;
     addToCart(product, selectedColor, selectedSize, quantity);
+    navigate('/cart');
   };
 
   const availableStock = product?.stockByVariant?.[selectedColor]?.[selectedSize] ?? product?.stock ?? 0;

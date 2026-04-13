@@ -182,3 +182,126 @@ export const Contact = () => (
     </div>
   </div>
 );
+
+export const ShippingPolicy = () => (
+  <div className="pt-32 pb-20 bg-bg">
+    <div className="container mx-auto px-6 max-w-3xl">
+      <h1 className="text-4xl font-light mb-6">Shipping Policy</h1>
+      <p className="text-muted mb-4">We ship domestically across India and to select international destinations. This page explains timelines, costs, tracking, and what to expect after you place an order.</p>
+
+      <h3 className="text-lg font-bold mt-6">Order processing</h3>
+      <p className="text-muted">Orders are usually processed within 1–3 business days. Processing includes order verification, quality checks, and packing. During sale periods processing may take longer.</p>
+
+      <h3 className="text-lg font-bold mt-6">Domestic Shipping</h3>
+      <ul className="list-disc pl-6 text-muted">
+        <li><strong>Standard:</strong> 3–7 business days (free over ₹2000).</li>
+        <li><strong>Express:</strong> 1–3 business days (additional fee applies).</li>
+      </ul>
+
+      <h3 className="text-lg font-bold mt-6">International Shipping</h3>
+      <p className="text-muted">We ship to selected countries. Transit times and rates vary by destination. Import duties and taxes are not included and are the recipient's responsibility.</p>
+
+      <h3 className="text-lg font-bold mt-6">Tracking & delivery</h3>
+      <p className="text-muted">Once your order ships you will receive an email with a tracking number. Use the carrier link to track delivery status. If a delivery attempt fails, the carrier will follow their retry policy — please contact support if you don't receive your parcel within the expected timeframe.</p>
+
+      <h3 className="text-lg font-bold mt-6">Lost or damaged items</h3>
+      <p className="text-muted">If your order arrives damaged or is lost in transit, contact support with photos and your order number. We will investigate and work with the carrier to resolve the issue, offering a replacement or refund where appropriate.</p>
+    </div>
+  </div>
+);
+
+export const ReturnsPolicy = () => (
+  <div className="pt-32 pb-20 bg-bg">
+    <div className="container mx-auto px-6 max-w-3xl">
+      <h1 className="text-4xl font-light mb-6">Returns & Exchanges</h1>
+      <p className="text-muted mb-4">We want you to be happy with your purchase. If a product doesn't meet your expectations you can return or exchange it under the conditions below.</p>
+
+      <h3 className="text-lg font-bold mt-6">Eligibility</h3>
+      <ul className="list-disc pl-6 text-muted">
+        <li>Returns accepted within 14 days of delivery.</li>
+        <li>Items must be unworn, unwashed, and with original tags and packaging.</li>
+        <li>Final-sale and intimate items (where hygiene is a concern) are non-returnable — these will be marked on the product page.</li>
+      </ul>
+
+      <h3 className="text-lg font-bold mt-6">How to return</h3>
+      <ol className="list-decimal pl-6 text-muted">
+        <li>Contact support@luxeva.com with your order number and reason for return.</li>
+        <li>We will provide a returns authorization and instructions.</li>
+        <li>Ship the item back using a tracked service and retain the proof of shipment.</li>
+      </ol>
+
+      <h3 className="text-lg font-bold mt-6">Refunds & timelines</h3>
+      <p className="text-muted">Once we receive and inspect the return, refunds are processed within 5–7 business days. Refunds are issued to the original payment method. Shipping costs are refundable only for items returned due to our error.</p>
+
+      <h3 className="text-lg font-bold mt-6">Exchanges</h3>
+      <p className="text-muted">If you need a different size and stock is available we will help facilitate an exchange. Exchanges depend on inventory — if the requested item is unavailable we will issue a refund or offer store credit.</p>
+    </div>
+  </div>
+);
+
+export const SizeGuidePage = () => (
+  <div className="pt-32 pb-20 bg-bg">
+    <div className="container mx-auto px-6 max-w-4xl">
+      <h1 className="text-4xl font-light mb-6">Size Guide</h1>
+      <p className="text-muted mb-6">Use this guide to find your best fit. Measurements are in centimeters. For the most accurate fit, measure a similar garment that fits you well or measure your body following the instructions below.</p>
+
+      <h3 className="text-lg font-bold mt-6">How to measure</h3>
+      <ul className="list-disc pl-6 text-muted">
+        <li><strong>Bust:</strong> Measure around the fullest part of your chest, keeping the tape level.</li>
+        <li><strong>Waist:</strong> Measure around the narrowest part of your waist, usually above the belly button.</li>
+        <li><strong>Hip:</strong> Measure around the fullest part of your hips, about 20cm below the waist depending on height.</li>
+      </ul>
+
+      <div className="overflow-x-auto mt-6">
+        <table className="w-full text-sm text-left">
+          <thead>
+            <tr className="border-b">
+              <th className="py-3 font-bold">Size</th>
+              <th className="py-3 font-bold">Bust (cm)</th>
+              <th className="py-3 font-bold">Waist (cm)</th>
+              <th className="py-3 font-bold">Hip (cm)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b"><td className="py-3">XS</td><td className="py-3">80–84</td><td className="py-3">60–64</td><td className="py-3">86–90</td></tr>
+            <tr className="border-b"><td className="py-3">S</td><td className="py-3">85–89</td><td className="py-3">65–69</td><td className="py-3">91–95</td></tr>
+            <tr className="border-b"><td className="py-3">M</td><td className="py-3">90–94</td><td className="py-3">70–74</td><td className="py-3">96–100</td></tr>
+            <tr className="border-b"><td className="py-3">L</td><td className="py-3">95–99</td><td className="py-3">75–79</td><td className="py-3">101–105</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p className="text-muted mt-6">If you're between sizes we recommend sizing up for comfort or contacting customer care for personalised advice.</p>
+    </div>
+  </div>
+);
+
+export const FAQ = () => (
+  <div className="pt-32 pb-20 bg-bg">
+    <div className="container mx-auto px-6 max-w-3xl">
+      <h1 className="text-4xl font-light mb-6">Frequently Asked Questions</h1>
+      <div className="space-y-6 text-muted">
+        <div>
+          <h4 className="font-bold">How long will my order take to arrive?</h4>
+          <p>Orders are processed within 1–3 business days; domestic delivery typically takes 3–7 business days for standard shipping. Express shipping is 1–3 business days. International delivery times vary.</p>
+        </div>
+        <div>
+          <h4 className="font-bold">Can I change or cancel my order?</h4>
+          <p>Contact support immediately with your order number. If your order hasn't been shipped we may be able to cancel or update it. Once shipped, you'll need to follow the returns process.</p>
+        </div>
+        <div>
+          <h4 className="font-bold">What payment methods do you accept?</h4>
+          <p>We accept major credit/debit cards, UPI, netbanking and popular wallets. All payments are processed securely.</p>
+        </div>
+        <div>
+          <h4 className="font-bold">How do I care for my items?</h4>
+          <p>Care instructions vary by item — check the product page and garment label. When in doubt, we recommend gentle machine wash or dry clean as specified on the label.</p>
+        </div>
+        <div>
+          <h4 className="font-bold">How do promotions and discount codes work?</h4>
+          <p>Only one promotion can be applied per order unless stated otherwise. Discounts cannot be combined with store credit unless specified.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
