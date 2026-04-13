@@ -57,6 +57,22 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     localStorage.setItem('luxeva_cart', JSON.stringify(cart));
+    // send cart snapshot for abandoned cart recovery when user is authenticated
+    const sendSnapshot = async () => {
+      try {
+        const token = localStorage.getItem('luxeva_token');
+        if (!token) return;
+        const payload = { userId: user?.id, email: user?.email, cart: cart.map(i => ({ productId: i.id, name: i.name, slug: i.slug, price: i.price, quantity: i.quantity, selectedColor: i.selectedColor, selectedSize: i.selectedSize })) };
+        await fetch('/api/abandoned', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        // ignore
+      }
+    };
+    sendSnapshot();
   }, [cart]);
 
   useEffect(() => {

@@ -8,6 +8,8 @@ const productRoutes = require('./features/products/productRoutes');
 // userRoutes moved to feature folder
 const userRoutes = require('./features/user/userRoutes');
 const orderRoutes = require('./features/orders/orderRoutes');
+const wishlistRoutes = require('./features/wishlists/wishlistRoutes');
+const inventoryRoutes = require('./features/admin/inventoryRoutes');
 const Contact = require('./models/Contact');
 
 const PORT = process.env.PORT || 4000;
@@ -34,8 +36,15 @@ async function start() {
 
         app.use('/api', authRoutes);
         app.use('/api/products', productRoutes);
+        app.use('/api/wishlists', wishlistRoutes);
+        app.use('/api/admin/inventory', inventoryRoutes);
+        app.use('/api/abandoned', require('./features/abandoned/abandonedRoutes'));
+        app.use('/api/giftcards', require('./features/giftcards/giftcardRoutes'));
         app.use('/api/users', userRoutes);
         app.use('/api/orders', orderRoutes);
+
+        // start background jobs
+        try { require('./jobs/abandonedCartWorker'); } catch (err) { console.error('Could not start abandoned worker', err); }
 
         app.get('/api/pages/about', (req, res) => {
             return res.json({

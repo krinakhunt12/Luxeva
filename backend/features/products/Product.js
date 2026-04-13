@@ -15,11 +15,17 @@ const ProductSchema = new mongoose.Schema({
     images: [String],
     description: String,
     variants: VariantSchema,
+    tags: [String],
+    colors: [String],
+    sizes: [String],
     isSale: Boolean,
     isNew: Boolean,
     inStock: Boolean,
     stock: Number,
     createdAt: { type: Date, default: Date.now }
 });
+
+// text index for search
+ProductSchema.index({ name: 'text', description: 'text', category: 'text', tags: 'text' });
 
 module.exports = mongoose.models.Product || mongoose.model('Product', ProductSchema);

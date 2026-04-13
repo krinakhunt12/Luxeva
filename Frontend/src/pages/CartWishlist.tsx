@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Share2 } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { motion } from 'motion/react';
 import { ProductCard } from '../components/ProductCard';
+import { useState } from 'react';
 
 export const Cart = () => {
   const { cart, removeFromCart, updateCartQuantity, cartTotal } = useShop();
@@ -138,6 +139,33 @@ export const Cart = () => {
 
 export const Wishlist = () => {
   const { wishlist } = useShop();
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareError, setShareError] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    setSharing(true);
+    setShareError(null);
+    try {
+      const token = localStorage.getItem('luxeva_token');
+      const res = await fetch('/api/wishlists', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ name: 'Wishlist', products: wishlist.map(p => p.id) })
+      });
+      if (!res.ok) throw new Error('Failed to create share link');
+      const data = await res.json();
+      const full = `${window.location.origin}${data.url}`;
+      setShareUrl(full);
+    } catch (err: any) {
+      setShareError(err.message || 'Error');
+    } finally {
+      setSharing(false);
+    }
+  };
 
   if (wishlist.length === 0) {
     return (
@@ -157,7 +185,23 @@ export const Wishlist = () => {
   return (
     <div className="pt-40 pb-20 bg-bg min-h-screen">
       <div className="container mx-auto px-6">
-        <h1 className="text-5xl font-light tracking-tighter uppercase mb-20 text-center">Wishlist</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-5xl font-light tracking-tighter uppercase">Wishlist</h1>
+          <div className="flex items-center gap-4">
+            {shareUrl ? (
+              <div className="flex items-center gap-2">
+                <a href={shareUrl} target="_blank" rel="noreferrer" className="text-sm underline">Open Link</a>
+                <button onClick={() => navigator.clipboard.writeText(shareUrl)} className="text-sm bg-primary text-white px-4 py-2">Copy</button>
+                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer" className="text-sm bg-sky-600 text-white px-4 py-2">Twitter</a>
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer" className="text-sm bg-blue-700 text-white px-4 py-2">Facebook</a>
+              </div>
+            ) : (
+              <button onClick={handleShare} disabled={sharing || wishlist.length===0} className="flex items-center gap-2 bg-primary text-white px-4 py-2">
+                <Share2 size={14} /> Share Wishlist
+              </button>
+            )}
+          </div>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
           {wishlist.map(product => (
             <div key={product.id} className="relative group">

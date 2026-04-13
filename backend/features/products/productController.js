@@ -10,6 +10,84 @@ const getProducts = async(req, res) => {
     return res.json(products);
 };
 
+const searchProducts = async(req, res) => {
+    try {
+        const { q, category, size, color, minPrice, maxPrice, page = 1, limit = 24 } = req.query;
+        const pageNum = Math.max(1, Number(page));
+        const per = Math.min(100, Number(limit) || 24);
+
+        const match = {};
+        if (q) {
+            // use text score if available
+            match.$text = { $search: q };
+        }
+        if (category) match.category = category;
+        if (size) match.sizes = size;
+        if (color) match.colors = color;
+        if (minPrice || maxPrice) match.price = {};
+        if (minPrice) match.price.$gte = Number(minPrice);
+        if (maxPrice) match.price.$lte = Number(maxPrice);
+
+        const agg = [
+            { $match: match },
+            {
+                $facet: {
+                    results: [{ $skip: (pageNum - 1) * per }, { $limit: per }],
+                    counts: [
+                        { $group: { _id: null, total: { $sum: 1 } } }
+                    ],
+                    facets: [
+                        { $group: { _id: null, sizes: { $addToSet: '$sizes' }, colors: { $addToSet: '$colors' }, categories: { $addToSet: '$category' } } }
+                    ]
+                }
+            }
+        ];
+
+        const out = await Product.aggregate(agg);
+        const results = (out[0] && out[0].results) || [];
+        const total = (out[0] && out[0].counts && out[0].counts[0] && out[0].counts[0].total) || 0;
+        const facetRaw = (out[0] && out[0].facets && out[0].facets[0]) || {};
+
+        // normalize facet arrays (flatten)
+        const sizes = Array.isArray(facetRaw.sizes) ? [].concat(...facetRaw.sizes).filter(Boolean) : [];
+        const colors = Array.isArray(facetRaw.colors) ? [].concat(...facetRaw.colors).filter(Boolean) : [];
+        const categories = Array.isArray(facetRaw.categories) ? [].concat(...facetRaw.categories).filter(Boolean) : [];
+
+        return res.json({ results, total, page: pageNum, per, facets: { sizes, colors, categories } });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Search failed' });
+    }
+};
+
+const suggest = async(req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q) return res.json([]);
+        const regex = new RegExp('^' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+        const items = await Product.find({ name: regex }).limit(8).select('name slug').lean();
+        return res.json(items.map(i => ({ name: i.name, slug: i.slug })));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Suggest failed' });
+    }
+};
+
+const visualSearch = async(req, res) => {
+    try {
+        // simple stub: accept `imageUrl` in body and return top products from same category if provided
+        const { imageUrl, category } = req.body || {};
+        if (!imageUrl) return res.status(400).json({ message: 'imageUrl required' });
+        let products = [];
+        if (category) products = await Product.find({ category }).limit(12).lean();
+        else products = await Product.find({}).limit(12).lean();
+        return res.json({ ok: true, note: 'This is a visual search stub — integrate an image-embedding service for real results', products });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Visual search failed' });
+    }
+};
+
 const getProductById = async(req, res) => {
     const product = await Product.findById(req.params.id).lean();
     if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -79,3 +157,6 @@ const deleteProduct = async(req, res) => {
 };
 
 module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct };
+module.exports.searchProducts = searchProducts;
+module.exports.suggest = suggest;
+module.exports.visualSearch = visualSearch;

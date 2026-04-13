@@ -1,19 +1,55 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search as SearchIcon, X } from 'lucide-react';
-import { products } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
 import { Link } from 'react-router-dom';
 
+type Facets = { sizes: string[]; colors: string[]; categories: string[] };
+
 export const Search = () => {
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [suggest, setSuggest] = useState<string[]>([]);
+  const [facets, setFacets] = useState<Facets>({ sizes: [], colors: [], categories: [] });
+  const [filters, setFilters] = useState<{ size?: string; color?: string; category?: string }>({});
+  const [visualUrl, setVisualUrl] = useState('');
 
-  const results = useMemo(() => {
-    if (!query.trim()) return [];
-    return products.filter(p => 
-      p.name.toLowerCase().includes(query.toLowerCase()) || 
-      p.category.toLowerCase().includes(query.toLowerCase()) ||
-      p.subCategory.toLowerCase().includes(query.toLowerCase())
-    );
+  useEffect(() => {
+    const id = setTimeout(() => {
+      const doSearch = async () => {
+        if (!query.trim() && !filters.category && !filters.color && !filters.size) {
+          setResults([]);
+          return;
+        }
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (query) params.set('q', query);
+        if (filters.category) params.set('category', filters.category);
+        if (filters.color) params.set('color', filters.color);
+        if (filters.size) params.set('size', filters.size);
+        const res = await fetch(`/api/products/search?${params.toString()}`);
+        const data = await res.json();
+        setResults(data.results || []);
+        setFacets(data.facets || { sizes: [], colors: [], categories: [] });
+        setLoading(false);
+      };
+      doSearch();
+    }, 300);
+    return () => clearTimeout(id);
+  }, [query, filters]);
+
+  useEffect(() => {
+    const doSuggest = async () => {
+      if (!query || query.length < 2) return setSuggest([]);
+      try {
+        const res = await fetch(`/api/products/suggest?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        setSuggest(data.map((s: any) => s.name));
+      } catch (err) {
+        // ignore
+      }
+    };
+    doSuggest();
   }, [query]);
 
   return (
@@ -35,34 +71,76 @@ export const Search = () => {
                 <X size={20} />
               </button>
             )}
+            {suggest.length > 0 && (
+              <div className="absolute left-0 right-0 bg-white border mt-2 z-50">
+                {suggest.map(s => (
+                  <div key={s} onClick={() => setQuery(s)} className="px-4 py-2 hover:bg-accent cursor-pointer">{s}</div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="mt-20">
-          {query.trim() ? (
-            results.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-                {results.map(product => (
-                  <ProductCard key={product.id} product={product} />
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <aside className="lg:col-span-1 space-y-6">
+            <div>
+              <h4 className="text-xs uppercase text-muted mb-2">Categories</h4>
+              <div className="flex flex-col gap-2">
+                {facets.categories.map(c => (
+                  <button key={c} onClick={() => setFilters(f => ({ ...f, category: f.category === c ? undefined : c }))} className={`text-sm text-left ${filters.category === c ? 'font-bold' : ''}`}>{c}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xs uppercase text-muted mb-2">Sizes</h4>
+              <div className="flex flex-wrap gap-2">
+                {facets.sizes.map(s => (
+                  <button key={s} onClick={() => setFilters(f => ({ ...f, size: f.size === s ? undefined : s }))} className={`px-3 py-2 border ${filters.size === s ? 'bg-primary text-white' : ''}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xs uppercase text-muted mb-2">Colors</h4>
+              <div className="flex gap-2 flex-wrap">
+                {facets.colors.map(c => (
+                  <button key={c} onClick={() => setFilters(f => ({ ...f, color: f.color === c ? undefined : c }))} className={`px-3 py-2 border ${filters.color === c ? 'ring-2 ring-gold' : ''}`}>{c}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xs uppercase text-muted mb-2">Visual Search</h4>
+              <div className="space-y-2">
+                <input value={visualUrl} onChange={(e) => setVisualUrl(e.target.value)} placeholder="Image URL" className="w-full px-3 py-2 border"/>
+                <button onClick={async () => {
+                  if (!visualUrl) return;
+                  setLoading(true);
+                  try {
+                    const res = await fetch('/api/products/visual', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: visualUrl }) });
+                    const d = await res.json();
+                    setResults(d.products || []);
+                  } catch (err) {
+                    // ignore
+                  } finally { setLoading(false); }
+                }} className="w-full bg-primary text-white py-2">Search by image</button>
+              </div>
+            </div>
+          </aside>
+
+          <main className="lg:col-span-3">
+            {loading ? (
+              <div className="text-center py-20">Searching…</div>
+            ) : results.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+                {results.map((product: any) => (
+                  <ProductCard key={product._id || product.id} product={product} />
                 ))}
               </div>
             ) : (
               <div className="text-center py-20">
-                <p className="text-muted text-lg italic font-serif">No results found for "{query}".</p>
+                <p className="text-muted text-lg italic font-serif">No results found.</p>
               </div>
-            )
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted mb-8">Quick Links</p>
-              <div className="flex flex-wrap justify-center gap-6">
-                {['New Arrivals', 'Women', 'Men', 'Accessories', 'Sale'].map(link => (
-                  <Link key={link} to="/collections" className="text-xs border border-accent px-6 py-3 hover:border-primary transition-colors uppercase tracking-widest font-bold">
-                    {link}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+            )}
+          </main>
         </div>
       </div>
     </div>

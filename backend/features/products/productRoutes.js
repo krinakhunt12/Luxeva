@@ -21,6 +21,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.get('/', productController.getProducts);
+router.get('/search', productController.searchProducts);
+router.get('/suggest', productController.suggest);
+router.post('/visual', productController.visualSearch);
 router.get('/:id', productController.getProductById);
 // Accept multipart/form-data with field name `images` (one or multiple files).
 // File handling is performed in the controller using express-fileupload.
