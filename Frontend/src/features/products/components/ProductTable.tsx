@@ -29,7 +29,24 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
           <tr key={p.id || (p as any)._id} className="group hover:bg-gray-50/50 transition-colors">
             <td className="p-6">
               <div className="w-16 h-20 bg-gray-50 rounded overflow-hidden shadow-sm border border-gray-100 group-hover:scale-105 transition-transform duration-500">
-                <img src={p.image || '/placeholder.png'} alt={p.name} className="w-full h-full object-cover"/>
+                {
+                  (() => {
+                    const maybeImage = (p as any).image;
+                    const imagesArr = (p as any).images;
+                    if (maybeImage) return <img src={maybeImage} alt={p.name} className="w-full h-full object-cover"/>;
+                    if (Array.isArray(imagesArr) && imagesArr.length) {
+                      const first = imagesArr[0];
+                      if (typeof first === 'string') {
+                        if (first.startsWith('data:') || first.startsWith('http')) {
+                          return <img src={first} alt={p.name} className="w-full h-full object-cover"/>;
+                        }
+                        // assume it's an image hash served by backend
+                        return <img src={`/api/images/${first}`} alt={p.name} className="w-full h-full object-cover"/>;
+                      }
+                    }
+                    return <img src={'/placeholder.png'} alt={p.name} className="w-full h-full object-cover"/>;
+                  })()
+                }
               </div>
             </td>
             <td className="p-6">
@@ -69,4 +86,3 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
     </table>
   );
 }
-

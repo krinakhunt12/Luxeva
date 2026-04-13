@@ -3,24 +3,17 @@ const router = express.Router();
 const productController = require('./productController');
 const { authenticate } = require('../../utils/authMiddleware');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
-// Configure multer storage to save files to `public/uploads`
-const uploadsDir = path.join(__dirname, '..', '..', 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        cb(null, uploadsDir);
-    },
-    filename: function(req, file, cb) {
-        const safeName = file.originalname.replace(/[^a-z0-9.\-()_]/gi, '_');
-        cb(null, Date.now() + '-' + safeName);
-    }
-});
+// Use memory storage so files are available as buffers on `req.files` and
+// nothing is written to disk.
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 router.get('/', productController.getProducts);
+// expose aggregated available filters (colors, sizes, subCategories)
+router.get('/filters', productController.getFilters);
+// place slug route before the generic `/:id` to avoid route collisions
+router.get('/slug/:slug', productController.getProductBySlug);
 router.get('/search', productController.searchProducts);
 router.get('/suggest', productController.suggest);
 router.post('/visual', productController.visualSearch);

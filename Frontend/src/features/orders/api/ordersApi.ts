@@ -1,17 +1,14 @@
 import { Order } from '../types';
+import { apiFetch } from '../../../utils/apiClient';
 
 export const fetchOrders = async (): Promise<Order[]> => {
-  const token = localStorage.getItem('luxeva_token');
-  const res = await fetch('/api/orders', {
-    headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-  });
-  if (!res.ok) throw new Error('Failed to fetch orders');
-  return res.json();
+  return apiFetch('/api/orders') as Promise<Order[]>;
 };
 
 export const createOrder = async (payload: Partial<Order>): Promise<Order> => {
-  const token = localStorage.getItem('luxeva_token');
-  const res = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' }, body: JSON.stringify(payload) });
-  if (!res.ok) throw new Error('Create order failed');
-  return res.json();
+  return apiFetch('/api/orders', { method: 'POST', body: JSON.stringify(payload) }) as Promise<Order>;
+};
+
+export const updateOrderStatus = async (id: string, status: string): Promise<Order> => {
+  return apiFetch(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }) as Promise<Order>;
 };

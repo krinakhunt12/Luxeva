@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Skeleton from '../../../components/ui/Skeleton';
 import ProductTable from '../components/ProductTable';
 import ProductForm from '../components/ProductForm';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '../hooks/useProducts';
@@ -38,8 +39,8 @@ export default function ProductsPage() {
       </div>
 
       {isLoading ? (
-        <div className="p-12 text-center bg-white border border-gray-100 rounded-2xl italic font-serif text-gray-400">
-          Loading inventory...
+        <div className="p-6">
+          <Skeleton count={3} lines={3} className="bg-white border border-gray-100 rounded-2xl p-6" />
         </div>
       ) : (
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">

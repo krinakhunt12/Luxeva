@@ -1,16 +1,16 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import Skeleton from '../components/ui/Skeleton';
+import { apiFetch } from '../utils/apiClient';
 
 const fetchAbout = async () => {
-  const res = await fetch('http://localhost:4000/api/pages/about');
-  if (!res.ok) throw new Error('Failed to load about');
-  return res.json();
+  return apiFetch('/api/pages/about');
 };
 
 export default function About() {
   const { data, isLoading, error } = useQuery({ queryKey: ['aboutPage'], queryFn: fetchAbout });
 
-  if (isLoading) return <div className="pt-40 text-center">Loading...</div>;
+  if (isLoading) return <div className="pt-40"><Skeleton className="max-w-4xl mx-auto px-6" lines={4} count={1} /></div>;
   if (error) return <div className="pt-40 text-center">Failed to load content.</div>;
 
   return (

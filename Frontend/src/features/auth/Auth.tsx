@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { useLogin, useSignUp } from './hooks/useAuth';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 
 export const Login = () => {
@@ -12,34 +13,21 @@ export const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fromPath = (location.state as any)?.from || '/';
+  const loginMutation = useLogin();
+  const [remember, setRemember] = useState(true);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
-    try {
-      const res = await fetch('http://localhost:4000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to login');
-      // store token locally
-      localStorage.setItem('luxeva_token', data.token);
-      localStorage.setItem('luxeva_user', JSON.stringify(data.user));
-      // If user was trying to access admin route and is admin, redirect back
-      if (data.user?.role === 'admin' && fromPath.startsWith('/admin')) {
-        navigate(fromPath);
-      } else {
-        navigate('/');
+    loginMutation.mutate({ email, password, remember }, {
+      onError: (err: any) => { setError(err?.message || 'Failed to login. Please check your credentials.'); setLoading(false); },
+      onSuccess: (data: any) => {
+        setLoading(false);
+        if (data.user?.role === 'admin' && fromPath.startsWith('/admin')) navigate(fromPath);
+        else navigate('/');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to login. Please check your credentials.');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -98,6 +86,11 @@ export const Login = () => {
               </div>
             </div>
 
+            <div className="flex items-center gap-3">
+              <input id="remember" type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} className="accent-primary" />
+              <label htmlFor="remember" className="text-[10px] text-muted uppercase tracking-widest">Remember me</label>
+            </div>
+
             <button 
               disabled={loading}
               className="w-full bg-primary text-white py-4 text-[10px] uppercase tracking-widest font-bold hover:bg-gold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -133,8 +126,9 @@ export const SignUp = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const signupMutation = useSignUp();
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.agree) {
       setError('Please agree to the terms and conditions.');
@@ -142,28 +136,10 @@ export const SignUp = () => {
     }
     setError('');
     setLoading(true);
-
-    try {
-      const res = await fetch('http://localhost:4000/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          mobile: formData.mobile,
-          password: formData.password
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to create account');
-      localStorage.setItem('luxeva_token', data.token);
-      localStorage.setItem('luxeva_user', JSON.stringify(data.user));
-      navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Failed to create account.');
-    } finally {
-      setLoading(false);
-    }
+    signupMutation.mutate({ ...formData, remember: true }, {
+      onError: (err: any) => { setError(err?.message || 'Failed to create account.'); setLoading(false); },
+      onSuccess: () => { setLoading(false); navigate('/'); }
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

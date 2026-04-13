@@ -12,7 +12,16 @@ const ProductSchema = new mongoose.Schema({
     originalPrice: Number,
     category: String,
     subCategory: String,
-    images: [String],
+    // Store only valid base64 data URLs directly
+    images: {
+        type: [String],
+        validate: {
+            validator: function(v) {
+                return v.every(img => typeof img === 'string' && img.startsWith('data:image/'));
+            },
+            message: props => `${props.value} contains invalid image format. Only base64 data URLs are allowed.`
+        }
+    },
     description: String,
     variants: VariantSchema,
     tags: [String],

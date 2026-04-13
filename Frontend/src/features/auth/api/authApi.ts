@@ -1,21 +1,10 @@
 import { LoginPayload, SignUpPayload, User } from '../types';
+import { apiFetch } from '../../../utils/apiClient';
 
 export const login = async (payload: LoginPayload): Promise<{ token: string; user: User }> => {
-  const res = await fetch('/api/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error('Login failed');
-  return res.json();
+  return apiFetch('/api/login', { method: 'POST', body: JSON.stringify(payload) }) as Promise<{ token: string; user: User }>;
 };
 
 export const signup = async (payload: SignUpPayload): Promise<{ token: string; user: User }> => {
-  const res = await fetch('/api/signup', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error('Signup failed');
-  return res.json();
+  return apiFetch('/api/signup', { method: 'POST', body: JSON.stringify(payload) }) as Promise<{ token: string; user: User }>;
 };

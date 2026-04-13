@@ -1,9 +1,18 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
+import { useCreateOrder } from '../features/orders/hooks/useOrders';
 
 const Checkout: React.FC = () => {
-  const { cart, cartTotal } = useShop();
+  const { cart, cartTotal, clearCart } = useShop();
+  const navigate = useNavigate();
+  const createOrder = useCreateOrder();
+
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [address1, setAddress1] = useState('');
+  const [city, setCity] = useState('');
+  const [postal, setPostal] = useState('');
 
   return (
     <div className="pt-40 pb-20 bg-bg min-h-screen">
@@ -15,15 +24,33 @@ const Checkout: React.FC = () => {
             <h2 className="text-sm uppercase tracking-[0.2em] font-bold">Shipping Address</h2>
             <p className="text-xs text-muted">You currently have {cart.length} item(s) in your cart.</p>
 
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={(e) => {
+              e.preventDefault();
+              // build payload
+              const payload = {
+                items: cart.map(item => ({ productId: item.id, name: item.name, price: item.price, quantity: item.quantity })),
+                shippingAddress: { fullName, email, address1, city, postal },
+                total: cartTotal,
+                saveAddress: false
+              };
+
+              createOrder.mutate(payload, {
+                onSuccess: (data) => {
+                  // clear cart and show the empty cart page directly
+                  clearCart();
+                  navigate('/cart');
+                },
+                // notifications are handled by the mutation hook
+              });
+            }}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input placeholder="Full name" className="border border-accent p-3" />
-                <input placeholder="Email address" className="border border-accent p-3" />
+                <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" className="border border-accent p-3" />
+                <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" className="border border-accent p-3" />
               </div>
-              <input placeholder="Address line 1" className="w-full border border-accent p-3" />
+              <input value={address1} onChange={(e) => setAddress1(e.target.value)} placeholder="Address line 1" className="w-full border border-accent p-3" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input placeholder="City" className="border border-accent p-3" />
-                <input placeholder="Postal code" className="border border-accent p-3" />
+                <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" className="border border-accent p-3" />
+                <input value={postal} onChange={(e) => setPostal(e.target.value)} placeholder="Postal code" className="border border-accent p-3" />
               </div>
 
               <h3 className="text-sm uppercase tracking-[0.2em] font-bold pt-6">Payment</h3>

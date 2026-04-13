@@ -8,6 +8,7 @@ const productRoutes = require('./features/products/productRoutes');
 // userRoutes moved to feature folder
 const userRoutes = require('./features/user/userRoutes');
 const orderRoutes = require('./features/orders/orderRoutes');
+const offerRoutes = require('./features/offers/offerRoutes');
 const wishlistRoutes = require('./features/wishlists/wishlistRoutes');
 const inventoryRoutes = require('./features/admin/inventoryRoutes');
 const Contact = require('./models/Contact');
@@ -19,15 +20,7 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/Luxeva';
 const app = express();
 app.use(cors());
 app.use(express.json());
-const path = require('path');
-const fs = require('fs');
-// multer will be applied at the product route level
-
-// Serve uploaded files from /uploads
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+// Images are stored in the database as Base64 strings directly in the Product collection.
 
 async function start() {
     try {
@@ -42,6 +35,7 @@ async function start() {
         app.use('/api/giftcards', require('./features/giftcards/giftcardRoutes'));
         app.use('/api/users', userRoutes);
         app.use('/api/orders', orderRoutes);
+        app.use('/api/offers', offerRoutes);
 
         // start background jobs
         try { require('./jobs/abandonedCartWorker'); } catch (err) { console.error('Could not start abandoned worker', err); }

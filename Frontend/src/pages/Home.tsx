@@ -1,9 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { products } from '../data/products';
+import { getProducts } from '../features/products/api/productsApi';
 import { ProductCard } from '../components/ProductCard';
 import { ArrowRight, Play } from 'lucide-react';
+import Skeleton from '../components/ui/Skeleton';
 
 const Hero = () => {
   const ref = useRef(null);
@@ -99,7 +100,26 @@ const CategoryPills = () => {
 };
 
 const NewArrivals = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const fetchedProducts = await getProducts();
+        setProducts(fetchedProducts);
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   const newProducts = products.filter(p => p.isNew || p.isSale).slice(0, 4);
+
+  if (loading) return <div className="py-20"><div className="container mx-auto px-6"><Skeleton count={4} lines={2} /></div></div>;
 
   return (
     <section className="py-20 bg-white">
@@ -115,7 +135,7 @@ const NewArrivals = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
           {newProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product._id || product.id} product={product} />
           ))}
         </div>
       </div>

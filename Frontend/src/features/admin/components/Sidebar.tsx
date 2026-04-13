@@ -43,6 +43,11 @@ export default function Sidebar({ collapsed = false, onToggle }: Props) {
           <span className={`${collapsed ? 'hidden' : 'block'} text-sm font-medium`}>Orders</span>
         </NavLink>
 
+        <NavLink to="/admin/offers" className={linkClass}>
+          <Package size={18} />
+          <span className={`${collapsed ? 'hidden' : 'block'} text-sm font-medium`}>Offers</span>
+        </NavLink>
+
         <div className="pt-4 mt-4 border-t border-gray-100">
           <NavLink to="/admin/add-product" className={linkClass}>
             <PlusSquare size={18} />

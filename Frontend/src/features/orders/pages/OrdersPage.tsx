@@ -1,10 +1,11 @@
 import React from 'react';
 import { useOrders } from '../hooks/useOrders';
+import Skeleton from '../../../components/ui/Skeleton';
 
 export const OrdersPage: React.FC = () => {
   const { data: orders = [], isLoading, isError, error } = useOrders();
 
-  if (isLoading) return <div className="p-6">Loading orders...</div>;
+  if (isLoading) return <div className="p-6"><Skeleton count={3} lines={2} /></div>;
   if (isError) return <div className="p-6 text-red-600">{(error as Error).message}</div>;
 
   return (

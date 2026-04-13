@@ -78,12 +78,15 @@ export default function ProductForm({ open, onClose, onSave, initial }: Props) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Image URL</label>
+            <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Product Photo</label>
             <input 
               className="w-full bg-gray-50 border-b-2 border-transparent focus:border-primary px-4 py-4 text-xs focus:outline-none transition-all font-bold text-gray-900" 
-              placeholder="https://images.luxury..." 
-              value={form.image || ''} 
-              onChange={(e) => setForm({ ...form, image: e.target.value })} 
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) setForm({ ...form, images: [file] as any });
+              }} 
             />
           </div>
         </div>
@@ -91,7 +94,20 @@ export default function ProductForm({ open, onClose, onSave, initial }: Props) {
         <div className="mt-12">
           <button 
             className="w-full py-5 bg-gray-900 hover:bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] transition-all transform hover:scale-[1.02] active:scale-95 shadow-xl shadow-gray-200" 
-            onClick={() => { onSave(form); }}
+            onClick={() => {
+              const formData = new FormData();
+              Object.entries(form).forEach(([key, value]) => {
+                if (key === 'images' && Array.isArray(value)) {
+                  value.forEach(v => {
+                    if (v instanceof File) formData.append('images', v);
+                    else formData.append('images', v);
+                  });
+                } else if (value !== undefined) {
+                  formData.append(key, value as string);
+                }
+              });
+              onSave(formData as any);
+            }}
           >
             {initial ? 'Save Changes' : 'Create Product'}
           </button>
