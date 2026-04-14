@@ -15,6 +15,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import { Search, ShippingPolicy, ReturnsPolicy, SizeGuidePage, FAQ } from './pages/StaticPages';
 import { Login, SignUp } from './features/auth/Auth';
+import AuthSuccess from './features/auth/AuthSuccess';
 import { Account } from './pages/Account';
 import { OrdersPage } from './features/orders/pages/OrdersPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -99,6 +100,7 @@ export default function App() {
             <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/wishlists/:token" element={<WishlistShare />} />
+            <Route path="/auth/success" element={<AuthSuccess />} />
             <Route path="/search" element={<Search />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />

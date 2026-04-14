@@ -99,6 +99,10 @@ export const Login = () => {
             </button>
           </form>
 
+          <div className="mt-6">
+            <a href="/api/google" className="w-full block text-center bg-white border border-accent py-3 rounded text-sm hover:bg-accent/50">Sign in with Google</a>
+          </div>
+
           <div className="mt-10 pt-10 border-t border-accent text-center space-y-4">
             <p className="text-xs text-muted italic font-serif">Don't have an account yet?</p>
             <Link 
