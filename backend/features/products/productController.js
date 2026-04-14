@@ -15,7 +15,7 @@ const getProducts = async(req, res) => {
             const skip = (pageNum - 1) * limitNum;
             const [items, total] = await Promise.all([
                 Product.find(q).skip(skip).limit(limitNum).lean(),
-                Product.countDocuments(q)
+                Product.countDocuments(q),
             ]);
             const pages = Math.max(1, Math.ceil(total / limitNum));
             return res.json({ products: items, total, page: pageNum, pages });
@@ -30,26 +30,22 @@ const getProducts = async(req, res) => {
             const now = new Date();
             const offers = await Offer.find({ active: true }).lean();
 
-            const activeOffers = offers.filter(o => {
-                // skip inactive by admin
+            const activeOffers = offers.filter((o) => {
                 if (o.status && o.status !== 'active') return false;
                 if (o.startsAt && new Date(o.startsAt) > now) return false;
                 if (o.endsAt && new Date(o.endsAt) < now) return false;
                 return true;
             });
 
-            products = products.map(p => {
-                // find all offers that apply to this product
-                const applicable = activeOffers.filter(o => {
+            products = products.map((p) => {
+                const applicable = activeOffers.filter((o) => {
                     if (o.appliesTo === 'all') return true;
-                    // legacy single productId
                     if (o.productId && String(o.productId) === String(p._id)) return true;
-                    if (Array.isArray(o.productIds) && o.productIds.find(id => String(id) === String(p._id))) return true;
+                    if (Array.isArray(o.productIds) && o.productIds.find((id) => String(id) === String(p._id))) return true;
                     return false;
                 });
                 if (!applicable || applicable.length === 0) return p;
 
-                // choose best offer by maximum saving amount
                 let best = null;
                 let bestSaving = 0;
                 for (const o of applicable) {
@@ -75,7 +71,6 @@ const getProducts = async(req, res) => {
                 return copy;
             });
         } catch (e) {
-            // if offers directory not present or error, ignore and return products unchanged
             console.warn('offers not applied:', e.message || e);
         }
 
@@ -92,10 +87,7 @@ const searchProducts = async(req, res) => {
         const per = Math.min(100, Number(limit) || 24);
 
         const match = {};
-        if (q) {
-            // use text score if available
-            match.$text = { $search: q };
-        }
+        if (q) match.$text = { $search: q };
         if (category) match.category = category;
         if (size) match.sizes = size;
         if (color) match.colors = color;
@@ -108,14 +100,10 @@ const searchProducts = async(req, res) => {
             {
                 $facet: {
                     results: [{ $skip: (pageNum - 1) * per }, { $limit: per }],
-                    counts: [
-                        { $group: { _id: null, total: { $sum: 1 } } }
-                    ],
-                    facets: [
-                        { $group: { _id: null, sizes: { $addToSet: '$sizes' }, colors: { $addToSet: '$colors' }, categories: { $addToSet: '$category' } } }
-                    ]
-                }
-            }
+                    counts: [{ $group: { _id: null, total: { $sum: 1 } } }],
+                    facets: [{ $group: { _id: null, sizes: { $addToSet: '$sizes' }, colors: { $addToSet: '$colors' }, categories: { $addToSet: '$category' } } }],
+                },
+            },
         ];
 
         const out = await Product.aggregate(agg);
@@ -123,7 +111,6 @@ const searchProducts = async(req, res) => {
         const total = (out[0] && out[0].counts && out[0].counts[0] && out[0].counts[0].total) || 0;
         const facetRaw = (out[0] && out[0].facets && out[0].facets[0]) || {};
 
-        // normalize facet arrays (flatten)
         const sizes = Array.isArray(facetRaw.sizes) ? [].concat(...facetRaw.sizes).filter(Boolean) : [];
         const colors = Array.isArray(facetRaw.colors) ? [].concat(...facetRaw.colors).filter(Boolean) : [];
         const categories = Array.isArray(facetRaw.categories) ? [].concat(...facetRaw.categories).filter(Boolean) : [];
@@ -139,157 +126,9 @@ const suggest = async(req, res) => {
     try {
         const { q } = req.query;
         if (!q) return res.json([]);
-        const regex = new RegExp('^' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+        const regex = new RegExp('^' + q.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'), 'i');
         const items = await Product.find({ name: regex }).limit(8).select('name slug').lean();
-        return res.json(items.map(i => ({ name: i.name, slug: i.slug })));
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Suggest failed' });
-    }
-};
-
-try {
-    const { search, page, limit, category } = req.query;
-    const q = {};
-    if (search) q.$or = [{ name: new RegExp(search, 'i') }, { slug: new RegExp(search, 'i') }, { description: new RegExp(search, 'i') }];
-    if (category) q.category = new RegExp(`^${String(category)}`, 'i');
-
-    // If page and limit are provided, return paginated response
-    const pageNum = page ? parseInt(page, 10) : null;
-    const limitNum = limit ? parseInt(limit, 10) : null;
-
-    if (pageNum && limitNum) {
-        const skip = (pageNum - 1) * limitNum;
-        const [items, total] = await Promise.all([
-            Product.find(q).skip(skip).limit(limitNum).lean(),
-            Product.countDocuments(q)
-        ]);
-        const pages = Math.max(1, Math.ceil(total / limitNum));
-        return res.json({ products: items, total, page: pageNum, pages });
-    }
-
-    // Default: return all products (backwards compatible)
-    let products = await Product.find(q).lean();
-
-    // Attach active offers (simple application logic)
-    try {
-        const Offer = require('../offers/Offer');
-        const now = new Date();
-        const offers = await Offer.find({ active: true }).lean();
-
-        const activeOffers = offers.filter(o => {
-            // skip inactive by admin
-            if (o.status && o.status !== 'active') return false;
-            if (o.startsAt && new Date(o.startsAt) > now) return false;
-            if (o.endsAt && new Date(o.endsAt) < now) return false;
-            return true;
-        });
-
-        products = products.map(p => {
-            // find all offers that apply to this product
-            const applicable = activeOffers.filter(o => {
-                if (o.appliesTo === 'all') return true;
-                // legacy single productId
-                if (o.productId && String(o.productId) === String(p._id)) return true;
-                if (Array.isArray(o.productIds) && o.productIds.find(id => String(id) === String(p._id))) return true;
-                return false;
-            });
-            if (!applicable || applicable.length === 0) return p;
-
-            // choose best offer by maximum saving amount
-            let best = null;
-            let bestSaving = 0;
-            for (const o of applicable) {
-                const amt = Number(o.amount || 0);
-                let saving = 0;
-                if (o.discountType === 'fixed') saving = amt;
-                else saving = (p.price || 0) * (amt / 100);
-                if (saving > bestSaving) {
-                    bestSaving = saving;
-                    best = o;
-                }
-            }
-
-            if (!best) return p;
-            const copy = {...p };
-            copy.originalPrice = copy.price;
-            if (best.discountType === 'fixed') {
-                copy.price = Math.max(0, copy.price - Number(best.amount || 0));
-            } else {
-                copy.price = Math.max(0, Math.round(copy.price * (1 - Number(best.amount || 0) / 100)));
-            }
-            copy.appliedOffer = { id: best._id, title: best.title, discountType: best.discountType, amount: best.amount, bannerImage: best.bannerImage };
-            return copy;
-        });
-    } catch (e) {
-        // if offers directory not present or error, ignore and return products unchanged
-        console.warn('offers not applied:', e.message || e);
-    }
-
-    return res.json(products);
-} catch (err) {
-    return res.status(500).json({ message: err.message });
-}
-};
-
-
-const searchProducts = async(req, res) => {
-    try {
-        const { q, category, size, color, minPrice, maxPrice, page = 1, limit = 24 } = req.query;
-        const pageNum = Math.max(1, Number(page));
-        const per = Math.min(100, Number(limit) || 24);
-
-        const match = {};
-        if (q) {
-            // use text score if available
-            match.$text = { $search: q };
-        }
-        if (category) match.category = category;
-        if (size) match.sizes = size;
-        if (color) match.colors = color;
-        if (minPrice || maxPrice) match.price = {};
-        if (minPrice) match.price.$gte = Number(minPrice);
-        if (maxPrice) match.price.$lte = Number(maxPrice);
-
-        const agg = [
-            { $match: match },
-            {
-                $facet: {
-                    results: [{ $skip: (pageNum - 1) * per }, { $limit: per }],
-                    counts: [
-                        { $group: { _id: null, total: { $sum: 1 } } }
-                    ],
-                    facets: [
-                        { $group: { _id: null, sizes: { $addToSet: '$sizes' }, colors: { $addToSet: '$colors' }, categories: { $addToSet: '$category' } } }
-                    ]
-                }
-            }
-        ];
-
-        const out = await Product.aggregate(agg);
-        const results = (out[0] && out[0].results) || [];
-        const total = (out[0] && out[0].counts && out[0].counts[0] && out[0].counts[0].total) || 0;
-        const facetRaw = (out[0] && out[0].facets && out[0].facets[0]) || {};
-
-        // normalize facet arrays (flatten)
-        const sizes = Array.isArray(facetRaw.sizes) ? [].concat(...facetRaw.sizes).filter(Boolean) : [];
-        const colors = Array.isArray(facetRaw.colors) ? [].concat(...facetRaw.colors).filter(Boolean) : [];
-        const categories = Array.isArray(facetRaw.categories) ? [].concat(...facetRaw.categories).filter(Boolean) : [];
-
-        return res.json({ results, total, page: pageNum, per, facets: { sizes, colors, categories } });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Search failed' });
-    }
-};
-
-const suggest = async(req, res) => {
-    try {
-        const { q } = req.query;
-        if (!q) return res.json([]);
-        const regex = new RegExp('^' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-        const items = await Product.find({ name: regex }).limit(8).select('name slug').lean();
-        return res.json(items.map(i => ({ name: i.name, slug: i.slug })));
+        return res.json(items.map((i) => ({ name: i.name, slug: i.slug })));
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'Suggest failed' });
@@ -298,7 +137,6 @@ const suggest = async(req, res) => {
 
 const visualSearch = async(req, res) => {
     try {
-        // simple stub: accept `imageUrl` in body and return top products from same category if provided
         const { imageUrl, category } = req.body || {};
         if (!imageUrl) return res.status(400).json({ message: 'imageUrl required' });
         let products = [];
@@ -347,10 +185,10 @@ const getFilters = async(req, res) => {
                     _id: null,
                     colors: { $addToSet: { name: '$variants.colors.name', hex: '$variants.colors.hex' } },
                     sizes: { $addToSet: '$variants.sizes' },
-                    subCategories: { $addToSet: '$subCategory' }
-                }
+                    subCategories: { $addToSet: '$subCategory' },
+                },
             },
-            { $project: { _id: 0, colors: 1, sizes: 1, subCategories: 1 } }
+            { $project: { _id: 0, colors: 1, sizes: 1, subCategories: 1 } },
         ];
 
         const [result] = await Product.aggregate(pipeline);
@@ -364,7 +202,6 @@ const createProduct = async(req, res) => {
     try {
         const payload = req.body || {};
 
-        // If files are uploaded via multer, they will be in req.files
         if (req.files && Array.isArray(req.files) && req.files.length) {
             const uploadedUrls = [];
             for (const file of req.files) {
@@ -374,16 +211,12 @@ const createProduct = async(req, res) => {
             payload.images = (payload.images || []).concat(uploadedUrls);
         }
 
-        // If a single `image` is provided in JSON, convert to `images` array
         if (payload.image && !payload.images) payload.images = [payload.image];
 
         if (!payload.name) return res.status(400).json({ message: 'Missing required field: name' });
 
         const slugify = (str) => {
-            return String(str).toLowerCase().trim()
-                .replace(/[^a-z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-');
+            return String(str).toLowerCase().trim().replace(/[^a-z0-9\\s-]/g, '').replace(/\\s+/g, '-').replace(/-+/g, '-');
         };
 
         let baseSlug = payload.slug ? slugify(payload.slug) : slugify(payload.name);
@@ -433,7 +266,15 @@ const deleteProduct = async(req, res) => {
     }
 };
 
-module.exports = { getProducts, getProductById, getProductBySlug, getFilters, createProduct, updateProduct, deleteProduct };
-module.exports.searchProducts = searchProducts;
-module.exports.suggest = suggest;
-module.exports.visualSearch = visualSearch;
+module.exports = {
+    getProducts,
+    searchProducts,
+    suggest,
+    visualSearch,
+    getProductById,
+    getProductBySlug,
+    getFilters,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+};
