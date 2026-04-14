@@ -18,9 +18,11 @@ import { Product, User } from '../types';
 import Skeleton from '../components/ui/Skeleton';
 import OfferForm from '../features/admin/OfferForm';
 import OffersList from '../features/admin/OffersList';
+import AbandonedCarts from '../features/admin/AbandonedCarts';
+import LowStock from '../features/admin/LowStock';
 
 // Sub-components for Admin Panel
-const Sidebar = ({ activeTab, setActiveTab, offersOpen, setOffersOpen }: { activeTab: string, setActiveTab: (tab: 'dashboard' | 'products' | 'users') => void, offersOpen: boolean, setOffersOpen: (v: boolean) => void }) => (
+const Sidebar = ({ activeTab, setActiveTab, offersOpen, setOffersOpen }: { activeTab: string, setActiveTab: (tab: 'dashboard' | 'products' | 'users' | 'abandoned' | 'lowstock') => void, offersOpen: boolean, setOffersOpen: (v: boolean) => void }) => (
   <aside className="lg:w-64 space-y-2">
     <button 
       onClick={() => setActiveTab('dashboard')}
@@ -45,6 +47,18 @@ const Sidebar = ({ activeTab, setActiveTab, offersOpen, setOffersOpen }: { activ
       className={`w-full flex items-center gap-3 p-4 text-[10px] uppercase tracking-widest font-bold transition-colors ${offersOpen ? 'bg-primary text-white' : 'bg-white border border-accent hover:border-primary'}`}
     >
       Offers
+    </button>
+    <button 
+      onClick={() => setActiveTab('abandoned')}
+      className={`w-full flex items-center gap-3 p-4 text-[10px] uppercase tracking-widest font-bold transition-colors ${activeTab === 'abandoned' ? 'bg-primary text-white' : 'bg-white border border-accent hover:border-primary'}`}
+    >
+      Abandoned Carts
+    </button>
+    <button 
+      onClick={() => setActiveTab('lowstock')}
+      className={`w-full flex items-center gap-3 p-4 text-[10px] uppercase tracking-widest font-bold transition-colors ${activeTab === 'lowstock' ? 'bg-primary text-white' : 'bg-white border border-accent hover:border-primary'}`}
+    >
+      Low Stock
     </button>
   </aside>
 );
@@ -72,7 +86,7 @@ const DashboardStats = ({ productsCount, usersCount }: { productsCount: number, 
 
 export const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useShop();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'users'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'users' | 'abandoned' | 'lowstock'>('dashboard');
   const [offersOpen, setOffersOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -427,6 +441,18 @@ export const Admin = () => {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+            {activeTab === 'abandoned' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-light uppercase tracking-widest">Abandoned Carts</h2>
+                <AbandonedCarts />
+              </div>
+            )}
+            {activeTab === 'lowstock' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-light uppercase tracking-widest">Low Stock</h2>
+                <LowStock />
               </div>
             )}
           </main>

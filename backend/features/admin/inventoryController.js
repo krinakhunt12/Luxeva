@@ -23,4 +23,21 @@ const report = async(req, res) => {
     }
 };
 
-module.exports = { lowStock, report };
+const restock = async(req, res) => {
+    try {
+        const { id } = req.params;
+        const { stock } = req.body || {};
+        if (!id) return res.status(400).json({ message: 'Missing product id' });
+        const prod = await Product.findById(id);
+        if (!prod) return res.status(404).json({ message: 'Product not found' });
+        const newStock = typeof stock !== 'undefined' ? Number(stock) : (prod.stock || 0) + 10;
+        prod.stock = newStock;
+        await prod.save();
+        return res.json({ ok: true, product: prod });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Could not restock' });
+    }
+};
+
+module.exports = { lowStock, report, restock };

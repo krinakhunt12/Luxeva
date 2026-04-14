@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export const Account = () => {
   const { user, isAdmin, logout, updateUserProfile, deleteAccount } = useShop();
+  const [points, setPoints] = React.useState<number>((user && (user.points || 0)) || 0);
   const navigate = useNavigate();
 
   if (!user) {
@@ -40,6 +41,7 @@ export const Account = () => {
       email: user?.email || '',
       mobile: (user as any)?.mobile || ''
     });
+    setPoints(user && (user.points || 0));
   }, [user]);
 
   const handleSaveProfile = async () => {
@@ -92,6 +94,7 @@ export const Account = () => {
                 <div>
                   <h1 className="text-xl font-light uppercase tracking-tight">{user.displayName || 'User'}</h1>
                   <p className="text-[10px] text-muted uppercase tracking-widest">{user.email}</p>
+                  <p className="text-[10px] text-muted uppercase tracking-widest">Loyalty Points: <strong>{points || 0}</strong></p>
                 </div>
               </div>
 
@@ -148,6 +151,19 @@ export const Account = () => {
                   <button className="text-[10px] uppercase tracking-widest font-bold border-b border-primary pb-1 hover:text-gold hover:border-gold transition-all">
                     Add Card
                   </button>
+                  <div className="mt-4">
+                    <button onClick={async () => {
+                      const amt = Number(prompt('Enter points to redeem', '100')) || 0;
+                      if (!amt || amt <= 0) return;
+                      try {
+                        const res = await (await import('../features/rewards/api/rewardApi')).redeemPoints(amt);
+                        alert(`Redeemed ${res.deducted} points for ₹${res.value}. Remaining: ${res.pointsRemaining}`);
+                        setPoints(res.pointsRemaining);
+                      } catch (err: any) {
+                        alert(err?.message || 'Redeem failed');
+                      }
+                    }} className="mt-3 bg-primary text-white px-4 py-2">Redeem Points</button>
+                  </div>
                 </div>
               </section>
               

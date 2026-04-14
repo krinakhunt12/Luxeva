@@ -6,7 +6,8 @@ const createGiftCard = async(req, res) => {
         const { initialAmount, code, expiresAt } = req.body || {};
         if (!initialAmount) return res.status(400).json({ message: 'initialAmount required' });
         const giftCode = code || crypto.randomBytes(4).toString('hex').toUpperCase();
-        const g = new GiftCard({ code: giftCode, initialAmount, balance: initialAmount, expiresAt, createdBy: req.user ? .id });
+        const createdBy = req.user && (req.user.id || req.user._id) ? (req.user.id || req.user._id) : undefined;
+        const g = new GiftCard({ code: String(giftCode).toUpperCase(), initialAmount, balance: initialAmount, expiresAt, createdBy });
         await g.save();
         return res.json({ ok: true, gift: g });
     } catch (err) {
@@ -44,4 +45,22 @@ const redeem = async(req, res) => {
     }
 };
 
-module.exports = { createGiftCard, getByCode, redeem };
+// purchase endpoint: create a gift card for the authenticated buyer
+const purchaseGiftCard = async(req, res) => {
+    try {
+        const authUserId = req.user && (req.user.id || req.user._id);
+        if (!authUserId) return res.status(401).json({ message: 'Unauthorized' });
+        const { amount, code, expiresAt } = req.body || {};
+        if (!amount || Number(amount) <= 0) return res.status(400).json({ message: 'amount required' });
+        const giftCode = code ? String(code).toUpperCase() : crypto.randomBytes(4).toString('hex').toUpperCase();
+        const g = new GiftCard({ code: giftCode, initialAmount: Number(amount), balance: Number(amount), expiresAt, createdBy: authUserId });
+        await g.save();
+        // In a real app, you'd create an order/payment record here. We just return the code.
+        return res.json({ ok: true, gift: { code: g.code, amount: g.initialAmount } });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Could not purchase gift card' });
+    }
+};
+
+module.exports = { createGiftCard, getByCode, redeem, purchaseGiftCard };

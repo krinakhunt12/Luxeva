@@ -10,6 +10,8 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import Skeleton from '../components/ui/Skeleton';
 import { deriveImagesByColor } from '../utils/productUtils';
+import { fetchRecommendations } from '../features/products/api/recommendationsApi';
+import { useQuery } from '@tanstack/react-query';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -164,6 +166,12 @@ const ProductDetail = () => {
   const relatedProducts = (products || [])
     .filter((p: any) => p.category === product.category && (p.id || p._id) !== (product.id || product._id))
     .slice(0, 4);
+
+  const { data: recs = [], isLoading: recLoading } = useQuery({
+    queryKey: ['recommendations', product._id || product.id],
+    queryFn: () => fetchRecommendations(String(product._id || product.id), 8),
+    enabled: !!product,
+  });
 
   const accordions = [
     { id: 'description', title: 'Description', content: product.description },
@@ -382,9 +390,42 @@ const ProductDetail = () => {
                 <ShoppingBag size={16} />
                 {product.inStock ? 'Add to Bag' : 'Out of Stock'}
               </button>
-              <button className="w-full border border-primary py-5 text-[10px] uppercase tracking-[0.3em] font-bold hover:bg-primary hover:text-white transition-all duration-500">
+              <button onClick={async () => {
+                try {
+                  const token = localStorage.getItem('luxeva_token') || sessionStorage.getItem('luxeva_token');
+                  if (!token) return window.location.href = '/login';
+                  const res = await fetch('/api/orders/buy-now', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ productId: product._id || product.id, quantity, selectedColor, selectedSize }) });
+                  if (!res.ok) {
+                    const body = await res.json().catch(() => ({}));
+                    alert(body?.message || 'Buy now failed');
+                    return;
+                  }
+                  const data = await res.json();
+                  // navigate to orders or order confirmation
+                  window.location.href = '/orders';
+                } catch (err) {
+                  console.error(err);
+                  alert('Buy now failed');
+                }
+              }} className="w-full border border-primary py-5 text-[10px] uppercase tracking-[0.3em] font-bold hover:bg-primary hover:text-white transition-all duration-500">
                 Buy It Now
               </button>
+            </div>
+
+            {/* Related / Recommendations */}
+            <div className="border-t border-accent pt-6">
+              <h3 className="text-lg font-medium mb-4">You may also like</h3>
+              {recLoading ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {[1,2,3,4].map(i => <div key={i} className="h-40 bg-accent animate-pulse" />)}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {(recs || relatedProducts || []).slice(0,4).map((p: any) => (
+                    <ProductCard key={p._id || p.id} product={{ id: p._id || p.id, name: p.name, slug: p.slug, images: p.images, price: p.price, category: p.category, subCategory: p.subCategory, variants: p.variants, inStock: p.inStock }} />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Accordions */}

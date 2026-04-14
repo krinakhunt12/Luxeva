@@ -12,6 +12,8 @@ const OrderSchema = new mongoose.Schema({
     items: [OrderItemSchema],
     shippingAddress: Object,
     paymentMethod: String,
+    appliedOffer: Object,
+    appliedGiftCard: Object,
     total: Number,
     status: { type: String, default: 'created' },
     createdAt: { type: Date, default: Date.now },

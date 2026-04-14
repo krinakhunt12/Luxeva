@@ -13,6 +13,61 @@ const Checkout: React.FC = () => {
   const [address1, setAddress1] = useState('');
   const [city, setCity] = useState('');
   const [postal, setPostal] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [discount, setDiscount] = useState(0);
+  const [appliedOffer, setAppliedOffer] = useState<any | null>(null);
+  const [giftCode, setGiftCode] = useState('');
+  const [giftLoading, setGiftLoading] = useState(false);
+  const [giftDeducted, setGiftDeducted] = useState(0);
+  const [appliedGiftCard, setAppliedGiftCard] = useState<any | null>(null);
+
+  const handleValidateCoupon = async () => {
+    if (!couponCode) return;
+    setCouponLoading(true);
+    try {
+      const cartPayload = { items: cart.map(item => ({ productId: item.id, price: item.price, quantity: item.quantity })), total: cartTotal };
+      const res = await (await import('../features/offers/api/offerApi')).validateOffer(couponCode, cartPayload);
+      if (res && res.valid) {
+        setDiscount(res.discount || 0);
+        setAppliedOffer(res.offer || null);
+      } else {
+        setDiscount(0);
+        setAppliedOffer(null);
+        alert(res?.message || 'Coupon invalid');
+      }
+    } catch (err: any) {
+      setDiscount(0);
+      setAppliedOffer(null);
+      alert(err?.message || 'Coupon validation failed');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRedeemGift = async () => {
+    if (!giftCode) return;
+    setGiftLoading(true);
+    try {
+      const { redeemGiftCard } = await import('../features/giftcards/api/giftcardApi');
+      const cartPayloadAmount = Math.max(0, cartTotal - discount);
+      const res = await redeemGiftCard(giftCode.trim().toUpperCase(), cartPayloadAmount);
+      if (res && res.ok) {
+        setGiftDeducted(res.deducted || 0);
+        setAppliedGiftCard({ code: giftCode.trim().toUpperCase(), deducted: res.deducted || 0 });
+      } else {
+        alert(res?.message || 'Gift card invalid');
+        setGiftDeducted(0);
+        setAppliedGiftCard(null);
+      }
+    } catch (err: any) {
+      alert(err?.message || 'Redeem failed');
+      setGiftDeducted(0);
+      setAppliedGiftCard(null);
+    } finally {
+      setGiftLoading(false);
+    }
+  };
 
   return (
     <div className="pt-40 pb-20 bg-bg min-h-screen">
@@ -30,8 +85,10 @@ const Checkout: React.FC = () => {
               const payload = {
                 items: cart.map(item => ({ productId: item.id, name: item.name, price: item.price, quantity: item.quantity })),
                 shippingAddress: { fullName, email, address1, city, postal },
-                total: cartTotal,
-                saveAddress: false
+                total: Math.max(0, cartTotal - discount - giftDeducted),
+                saveAddress: false,
+                appliedOffer: appliedOffer ? { id: appliedOffer._id || appliedOffer.id, code: appliedOffer.code, title: appliedOffer.title, discount: discount } : null,
+                appliedGiftCard: appliedGiftCard ? { code: appliedGiftCard.code, deducted: appliedGiftCard.deducted || giftDeducted } : null
               };
 
               createOrder.mutate(payload, {
@@ -56,6 +113,32 @@ const Checkout: React.FC = () => {
               <h3 className="text-sm uppercase tracking-[0.2em] font-bold pt-6">Payment</h3>
               <p className="text-xs text-muted">This is a demo checkout — integrate your payment gateway here.</p>
 
+              <div className="mt-4">
+                <label className="text-xs uppercase text-muted">Coupon Code</label>
+                <div className="flex gap-2 mt-2">
+                  <input value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder="Enter coupon code" className="border border-accent p-2 flex-1" />
+                  <button type="button" onClick={handleValidateCoupon} disabled={couponLoading} className="bg-primary text-white px-4 py-2 text-[10px] uppercase tracking-widest font-bold">
+                    {couponLoading ? 'Checking...' : 'Apply'}
+                  </button>
+                </div>
+                {discount > 0 && (
+                  <div className="text-sm text-green-600 mt-2">Discount applied: ₹{discount}</div>
+                )}
+              </div>
+
+              <div className="mt-4">
+                <label className="text-xs uppercase text-muted">Gift Card</label>
+                <div className="flex gap-2 mt-2">
+                  <input value={giftCode} onChange={(e) => setGiftCode(e.target.value)} placeholder="Enter gift card code" className="border border-accent p-2 flex-1" />
+                  <button type="button" onClick={handleRedeemGift} disabled={giftLoading} className="bg-primary text-white px-4 py-2 text-[10px] uppercase tracking-widest font-bold">
+                    {giftLoading ? 'Checking...' : 'Redeem'}
+                  </button>
+                </div>
+                {giftDeducted > 0 && (
+                  <div className="text-sm text-green-600 mt-2">Gift applied: ₹{giftDeducted}</div>
+                )}
+              </div>
+
               <div className="pt-6 flex gap-4">
                 <button type="submit" className="bg-primary text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-gold transition-colors">
                   Place Order
@@ -78,9 +161,11 @@ const Checkout: React.FC = () => {
               ))}
             </div>
 
-            <div className="pt-6 border-t border-accent mt-6 flex justify-between font-bold">
-              <span>Total</span>
-              <span>₹{cartTotal}</span>
+            <div className="pt-6 border-t border-accent mt-6 space-y-2">
+              <div className="flex justify-between text-sm"><span>Subtotal</span><span>₹{cartTotal}</span></div>
+              <div className="flex justify-between text-sm"><span>Discount</span><span>- ₹{discount}</span></div>
+              <div className="flex justify-between text-sm"><span>Gift</span><span>- ₹{giftDeducted}</span></div>
+              <div className="flex justify-between font-bold"><span>Total</span><span>₹{Math.max(0, cartTotal - discount - giftDeducted)}</span></div>
             </div>
           </aside>
         </div>

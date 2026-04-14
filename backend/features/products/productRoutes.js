@@ -17,6 +17,8 @@ router.get('/slug/:slug', productController.getProductBySlug);
 router.get('/search', productController.searchProducts);
 router.get('/suggest', productController.suggest);
 router.post('/visual', productController.visualSearch);
+// recommendations for a product
+router.get('/:id/recommendations', productController.getRecommendations);
 router.get('/:id', productController.getProductById);
 // Accept multipart/form-data with field name `images` (one or multiple files).
 // File handling is performed in the controller using express-fileupload.
