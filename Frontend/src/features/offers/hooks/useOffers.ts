@@ -1,26 +1,19 @@
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import * as api from '../api/offerApi';
+import { apiFetch } from '../../../utils/apiClient';
 
 export function useValidateOffer() {
   const qc = useQueryClient();
-  return useMutation((payload: { code: string; cart: any; options?: any }) => api.validateOffer(payload.code, payload.cart, payload.options), {
-    onSuccess: () => {
-      qc.invalidateQueries(['cart']);
-      qc.invalidateQueries(['offers']);
-    },
-  });
+  return useMutation(
+    (payload: { code: string; cart: any; options?: any }) => api.validateOffer(payload.code, payload.cart, payload.options),
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(['cart']);
+        qc.invalidateQueries(['offers']);
+      },
+    }
+  );
 }
-
-export function useOffersQuery() {
-  return useQuery(['offers'], async () => {
-    // placeholder: backend offers endpoint
-    return [];
-  });
-}
-
-export default useValidateOffer;
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '../../../utils/apiClient';
 
 export const useOffers = () => {
   return useQuery({

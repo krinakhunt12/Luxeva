@@ -1,4 +1,4 @@
-import { apiFetch } from '../../../../utils/apiClient';
+import { apiFetch } from '../../../utils/apiClient';
 
 export const validateOffer = async (code: string, cart: { items: any[]; total: number }, options?: { paymentMethod?: string, paymentBank?: string }) => {
   const payload: any = { code, items: cart.items, total: cart.total };
