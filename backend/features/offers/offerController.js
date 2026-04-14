@@ -117,8 +117,8 @@ const validateOffer = async(req, res) => {
         // If a user is provided (or from authenticated request), check if they are a "new user".
         // New user definition: account created within last 30 days. For new users, cap discount to $10.
         try {
-            const possibleUserId = req.user.id || req.user._id || userId;
-            const possibleEmail = email || req.user.email;
+            const possibleUserId = (req.user && (req.user.id || req.user._id)) || userId;
+            const possibleEmail = email || (req.user && req.user.email);
             let foundUser = null;
             if (possibleUserId) foundUser = await User.findById(possibleUserId).lean();
             if (!foundUser && possibleEmail) foundUser = await User.findOne({ email: possibleEmail }).lean();

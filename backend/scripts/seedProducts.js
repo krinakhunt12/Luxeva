@@ -114,13 +114,13 @@ while (products.length < 40) {
 async function seed() {
     try {
         await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-        console.log('Connected to MongoDB for seeding');
+
 
         const slugs = products.map(p => p.slug);
         await Product.deleteMany({ slug: { $in: slugs } });
 
         const created = await Product.insertMany(products);
-        console.log(`Inserted ${created.length} products`);
+
         process.exit(0);
     } catch (err) {
         console.error('Seeding error:', err);

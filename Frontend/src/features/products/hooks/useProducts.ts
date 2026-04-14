@@ -1,20 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../api/productsApi';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '../api/productsApi';
-import { Product } from '../types';
-import { showSuccess, showError } from '../../../utils/toastService';
-
+import { Product } from '../../../types';
 
 export const useProducts = () => {
-  return useQuery({ queryKey: ['products'], queryFn: api.getProducts });
+  return useQuery<Product[]>({ queryKey: ['products'], queryFn: api.getProducts, staleTime: 1000 * 60 * 2 });
 };
 
 export const usePagedProducts = (page = 1, limit = 12, category?: string) => {
-  return useQuery({ queryKey: ['products', page, category], queryFn: () => api.getProductsPaged(page, limit, category), keepPreviousData: true });
+  return useQuery<{ products: Product[]; total: number; page: number; pages: number }>(
+    { queryKey: ['products', page, category], queryFn: () => api.getProductsPaged(page, limit, category), keepPreviousData: true }
+  );
 };
 
-export const useProductBySlug = (slug: string) => {
-  return useQuery({ queryKey: ['product', slug], queryFn: () => api.getProductBySlug(slug), enabled: !!slug });
+export const useProductBySlug = (slug?: string) => {
+  return useQuery<Product | null>({ queryKey: ['product', slug], queryFn: () => (slug ? api.getProductBySlug(slug) : Promise.resolve(null)), enabled: !!slug });
 };
 
 export const useCreateProduct = () => {

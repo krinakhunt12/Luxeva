@@ -25,7 +25,7 @@ app.use(express.json());
 async function start() {
     try {
         await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-        console.log('Connected to MongoDB');
+
 
         app.use('/api', authRoutes);
         app.use('/api/products', productRoutes);
@@ -58,7 +58,7 @@ async function start() {
             return res.status(200).json({ ok: true });
         });
 
-        app.listen(PORT, '0.0.0.0', () => console.log(`Luxeva backend listening on port ${PORT}`));
+        app.listen(PORT, '0.0.0.0', () => {});
     } catch (err) {
         console.error(err);
         process.exit(1);

@@ -9,9 +9,8 @@ async function check() {
         const db = mongoose.connection.db;
         const images = await db.collection('images').find({}).toArray();
         for (const img of images) {
-            console.log(`Hash: ${img.hash}, length: ${img.dataUrl?.length || 0}`);
             if (img.dataUrl && img.dataUrl.length > 1000) {
-                console.log(`Start: ${img.dataUrl.substring(0, 100)}`);
+
             }
         }
         process.exit(0);

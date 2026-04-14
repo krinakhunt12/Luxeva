@@ -9,22 +9,22 @@ async function check() {
         await mongoose.connect(MONGO_URI);
         const product = await Product.findOne({ slug: /pill/i }).lean();
         if (!product) {
-            console.log('Product not found');
+
             process.exit(0);
         }
-        console.log(`Product: ${product.name}`);
-        console.log(`Images count: ${product.images?.length || 0}`);
+
+
         if (product.images && product.images.length > 0) {
             const img = product.images[0];
-            console.log(`Image length: ${img.length}`);
-            console.log(`Image start: ${img.substring(0, 100)}`);
-            console.log(`Image end: ${img.substring(img.length - 100)}`);
-            
+
+
+
+
             // Check if it's a valid data URL
             if (img.startsWith('data:image/')) {
-                console.log('Valid data URL prefix');
+
             } else {
-                console.log('INVALID data URL prefix');
+
             }
         }
         process.exit(0);

@@ -8,13 +8,9 @@ async function check() {
         await mongoose.connect(MONGO_URI);
         const db = mongoose.connection.db;
         const images = await db.collection('images').find({}).limit(5).toArray();
-        console.log(`Total images in Image collection: ${await db.collection('images').countDocuments()}`);
         images.forEach(img => {
-            console.log(`Hash: ${img.hash}`);
-            console.log(`dataUrl type: ${typeof img.dataUrl}`);
-            console.log(`dataUrl length: ${img.dataUrl?.length || 0}`);
             if (img.dataUrl && img.dataUrl.length > 0) {
-                console.log(`dataUrl start: ${img.dataUrl.substring(0, 50)}`);
+
             }
         });
         process.exit(0);

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
-import { getProducts } from '../features/products/api/productsApi';
+import { useProducts } from '../features/products/hooks/useProducts';
 import { ProductCard } from '../components/ProductCard';
 import Skeleton from '../components/ui/Skeleton';
 
@@ -18,24 +18,7 @@ const Collections = () => {
   const [sortBy, setSortBy] = useState('featured');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const fetchedProducts = await getProducts();
-        console.log('fetchedProducts count:', fetchedProducts?.length);
-        console.log('sample product:', fetchedProducts?.[0]);
-        setProducts(fetchedProducts);
-      } catch (err) {
-        console.error('Failed to fetch products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+  const { data: products = [], isLoading: loading } = useProducts();
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -76,7 +59,7 @@ const Collections = () => {
   }, [category, selectedSubCategory, priceRange, sortBy, products]);
 
   const subCategories = useMemo(() => {
-    const filtered = products.filter(p => {
+    const filtered = products.filter((p: any) => {
       if (!category) return true;
       const slug = category.toLowerCase();
       const mapped = CATEGORY_MAP[slug];
@@ -87,7 +70,7 @@ const Collections = () => {
       }
       return cat === slug || ((p.category || '').replace(/\s+/g, '-').toLowerCase() === slug);
     });
-    const cats = filtered.map(p => p.subCategory).filter(Boolean);
+    const cats = filtered.map((p: any) => p.subCategory).filter((c): c is string => !!c);
     return Array.from(new Set(cats));
   }, [category, products]);
 

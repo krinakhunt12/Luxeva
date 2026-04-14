@@ -10,7 +10,7 @@ function createTransporter() {
             auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
         });
     }
-    return { sendMail: async(opts) => { console.log('EMAIL SEND (mock):', opts); return Promise.resolve(); } };
+    return { sendMail: async(opts) => { return Promise.resolve(); } };
 }
 
 const transporter = createTransporter();

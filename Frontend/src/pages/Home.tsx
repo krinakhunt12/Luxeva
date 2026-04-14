@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { getProducts } from '../features/products/api/productsApi';
+import { useProducts } from '../features/products/hooks/useProducts';
 import { ProductCard } from '../components/ProductCard';
 import { ArrowRight, Play } from 'lucide-react';
 import Skeleton from '../components/ui/Skeleton';
@@ -82,7 +82,7 @@ const CategoryPills = () => {
           <Link 
             key={cat.name} 
             to={cat.path}
-            className="group flex-shrink-0 relative w-64 aspect-[4/5] overflow-hidden bg-accent"
+            className="group shrink-0 relative w-64 aspect-[4/5] overflow-hidden bg-accent"
           >
             <img src={cat.image} alt={cat.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500" />
@@ -100,24 +100,9 @@ const CategoryPills = () => {
 };
 
 const NewArrivals = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: products = [], isLoading: loading } = useProducts();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const fetchedProducts = await getProducts();
-        setProducts(fetchedProducts);
-      } catch (err) {
-        console.error('Failed to fetch products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  const newProducts = products.filter(p => p.isNew || p.isSale).slice(0, 4);
+  const newProducts = (products || []).filter((p: any) => p.isNew || p.isSale).slice(0, 4);
 
   if (loading) return <div className="py-20"><div className="container mx-auto px-6"><Skeleton count={4} lines={2} /></div></div>;
 

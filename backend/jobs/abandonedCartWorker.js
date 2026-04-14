@@ -12,7 +12,7 @@ function createTransporter() {
         });
     }
     // fallback - logs
-    return { sendMail: async(opts) => { console.log('EMAIL SEND (mock):', opts); return Promise.resolve(); } };
+    return { sendMail: async(opts) => { return Promise.resolve(); } };
 }
 
 const transporter = createTransporter();
