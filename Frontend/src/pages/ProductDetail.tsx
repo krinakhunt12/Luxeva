@@ -58,6 +58,37 @@ const ProductDetail = () => {
 
   const { data: products = [] } = useProducts();
 
+  const productIdForRecs = product?._id || product?.id || null;
+  const { data: recs = [], isLoading: recLoading } = useQuery({
+    queryKey: ['recommendations', productIdForRecs],
+    queryFn: () => productIdForRecs ? fetchRecommendations(String(productIdForRecs), 8) : Promise.resolve([]),
+    enabled: !!productIdForRecs,
+  });
+
+  // load contextual promo (offer + recs) from server
+  const [promo, setPromo] = React.useState<any | null>(null);
+  React.useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!productIdForRecs) return;
+      try {
+        const { getPromosContext } = await import('../features/promos/api/promoApi');
+        const res = await getPromosContext(String(productIdForRecs));
+        if (mounted && res) setPromo(res);
+      } catch (e) {}
+    };
+    load();
+    return () => { mounted = false; };
+  }, [productIdForRecs]);
+
+  const handleValidatePromoClick = () => {
+    if (!promo || !promo.offer) return;
+    try {
+      localStorage.setItem('luxeva_pending_coupon', String(promo.offer.code || promo.offer.code || ''));
+    } catch (e) {}
+    navigate('/checkout');
+  };
+
   // images currently shown in gallery for selected color (fallback to product.images)
   let currentImages: string[] = [];
   if (product) {
@@ -109,7 +140,7 @@ const ProductDetail = () => {
   if (loading) return (
     <div className="pt-32 pb-20 bg-bg">
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           <div className="lg:col-span-7">
             <Skeleton count={1} lines={1} className="h-[480px] bg-accent" />
           </div>
@@ -167,11 +198,7 @@ const ProductDetail = () => {
     .filter((p: any) => p.category === product.category && (p.id || p._id) !== (product.id || product._id))
     .slice(0, 4);
 
-  const { data: recs = [], isLoading: recLoading } = useQuery({
-    queryKey: ['recommendations', product._id || product.id],
-    queryFn: () => fetchRecommendations(String(product._id || product.id), 8),
-    enabled: !!product,
-  });
+  
 
   const accordions = [
     { id: 'description', title: 'Description', content: product.description },
@@ -193,7 +220,7 @@ const ProductDetail = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           {/* Gallery */}
-          <div className="lg:col-span-7 flex flex-col md:flex-row gap-4">
+          <div className="lg:col-span-7 flex flex-col md:flex-row gap-4 min-h-[520px]">
             <div className="order-2 md:order-1 flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto no-scrollbar">
               {currentImages.map((img, i) => (
                 <button 
@@ -412,21 +439,7 @@ const ProductDetail = () => {
               </button>
             </div>
 
-            {/* Related / Recommendations */}
-            <div className="border-t border-accent pt-6">
-              <h3 className="text-lg font-medium mb-4">You may also like</h3>
-              {recLoading ? (
-                <div className="grid grid-cols-2 gap-4">
-                  {[1,2,3,4].map(i => <div key={i} className="h-40 bg-accent animate-pulse" />)}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {(recs || relatedProducts || []).slice(0,4).map((p: any) => (
-                    <ProductCard key={p._id || p.id} product={{ id: p._id || p.id, name: p.name, slug: p.slug, images: p.images, price: p.price, category: p.category, subCategory: p.subCategory, variants: p.variants, inStock: p.inStock }} />
-                  ))}
-                </div>
-              )}
-            </div>
+            
 
             {/* Accordions */}
             <div className="border-t border-accent pt-6 space-y-4">
@@ -458,6 +471,21 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Promo banner (contextual) */}
+        {promo?.offer && (
+          <div className="container mx-auto px-6 mt-8">
+            <div className="bg-yellow-50 border border-yellow-200 p-4 mb-6 rounded flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold">New user? Use {promo.offer.code} for up to ${promo.offer.newUserCap || 10} off</div>
+                <div className="text-xs text-muted">Limited time offer — applied at checkout</div>
+              </div>
+              <div>
+                <button onClick={handleValidatePromoClick} className="bg-primary text-white px-3 py-2 text-xs uppercase font-bold">Apply</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Recently Viewed / Related */}
         <div className="mt-40">

@@ -12,6 +12,9 @@ const OfferSchema = new mongoose.Schema({
     amount: { type: Number, required: true },
     // optional coupon code (uppercase)
     code: { type: String, index: true },
+    // optional bank or payment constraints (e.g., HDFC, ICICI) and allowed payment methods
+    bank: { type: String },
+    paymentMethods: { type: [String], default: [] }, // e.g., ['card', 'netbanking', 'upi']
     // banner image url or data URL
     bannerImage: { type: String },
     // status: active/inactive for admin control

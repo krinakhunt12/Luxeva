@@ -17,6 +17,8 @@ const Checkout: React.FC = () => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [appliedOffer, setAppliedOffer] = useState<any | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string>('card');
+  const [paymentBank, setPaymentBank] = useState<string>('');
   const [giftCode, setGiftCode] = useState('');
   const [giftLoading, setGiftLoading] = useState(false);
   const [giftDeducted, setGiftDeducted] = useState(0);
@@ -27,7 +29,7 @@ const Checkout: React.FC = () => {
     setCouponLoading(true);
     try {
       const cartPayload = { items: cart.map(item => ({ productId: item.id, price: item.price, quantity: item.quantity })), total: cartTotal };
-      const res = await (await import('../features/offers/api/offerApi')).validateOffer(couponCode, cartPayload);
+      const res = await (await import('../features/offers/api/offerApi')).validateOffer(couponCode, cartPayload, { paymentMethod, paymentBank });
       if (res && res.valid) {
         setDiscount(res.discount || 0);
         setAppliedOffer(res.offer || null);
@@ -68,6 +70,26 @@ const Checkout: React.FC = () => {
       setGiftLoading(false);
     }
   };
+
+  // auto-apply coupon if set from promo banner
+  React.useEffect(() => {
+    const pending = localStorage.getItem('luxeva_pending_coupon');
+    if (pending) {
+      setCouponCode(pending);
+      // attempt to validate once cart is available
+      (async () => {
+        try {
+          const cartPayload = { items: cart.map(item => ({ productId: item.id, price: item.price, quantity: item.quantity })), total: cartTotal };
+          const res = await (await import('../features/offers/api/offerApi')).validateOffer(pending, cartPayload, { paymentMethod, paymentBank });
+          if (res && res.valid) {
+            setDiscount(res.discount || 0);
+            setAppliedOffer(res.offer || null);
+          }
+        } catch (e) {}
+        try { localStorage.removeItem('luxeva_pending_coupon'); } catch (e) {}
+      })();
+    }
+  }, [cart]);
 
   return (
     <div className="pt-40 pb-20 bg-bg min-h-screen">
@@ -124,6 +146,20 @@ const Checkout: React.FC = () => {
                 {discount > 0 && (
                   <div className="text-sm text-green-600 mt-2">Discount applied: ₹{discount}</div>
                 )}
+              </div>
+
+              <div className="mt-4">
+                <label className="text-xs uppercase text-muted">Payment Method</label>
+                <div className="flex gap-2 mt-2">
+                  <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="border p-2">
+                    <option value="card">Card</option>
+                    <option value="netbanking">Netbanking</option>
+                    <option value="upi">UPI</option>
+                    <option value="emi">EMI</option>
+                    <option value="wallet">Wallet</option>
+                  </select>
+                  <input value={paymentBank} onChange={(e) => setPaymentBank(e.target.value)} placeholder="Bank (optional)" className="border p-2 flex-1" />
+                </div>
               </div>
 
               <div className="mt-4">

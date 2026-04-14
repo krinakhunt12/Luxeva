@@ -75,6 +75,7 @@ const OffersList: React.FC = () => {
                 <div className="w-full mt-4 col-span-3">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 w-full">
                     <input className="border p-2 rounded" value={formState.title || ''} onChange={e => setFormState((s: any) => ({ ...s, title: e.target.value }))} />
+                    <input className="border p-2 rounded" placeholder="Bank (optional)" value={formState.bank || ''} onChange={e => setFormState((s: any) => ({ ...s, bank: e.target.value }))} />
                     <select className="border p-2 rounded" value={formState.appliesTo} onChange={e => setFormState((s: any) => ({ ...s, appliesTo: e.target.value }))}>
                       <option value="all">All</option>
                       <option value="product">Product</option>
@@ -85,6 +86,7 @@ const OffersList: React.FC = () => {
                       <option value="fixed">Fixed</option>
                     </select>
                     <input type="number" className="border p-2 rounded" value={formState.amount} onChange={e => setFormState((s: any) => ({ ...s, amount: Number(e.target.value) }))} />
+                    <input className="border p-2 rounded" placeholder="Payment methods (comma separated)" value={formState.paymentMethods ? formState.paymentMethods.join(',') : ''} onChange={e => setFormState((s: any) => ({ ...s, paymentMethods: e.target.value.split(',').map((x:string)=>x.trim()).filter(Boolean) }))} />
                     <div className="flex items-center gap-2">
                       <label className="text-sm">Active</label>
                       <input type="checkbox" checked={!!formState.active} onChange={e => setFormState((s: any) => ({ ...s, active: e.target.checked }))} />

@@ -9,6 +9,8 @@ const OfferForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const [productId, setProductId] = useState('');
   const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
   const [amount, setAmount] = useState<number>(10);
+  const [bank, setBank] = useState('');
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
 
   const reset = () => {
     setTitle('');
@@ -16,11 +18,15 @@ const OfferForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     setProductId('');
     setDiscountType('percentage');
     setAmount(10);
+    setBank('');
+    setPaymentMethods([]);
   };
 
   const handleCreate = () => {
     const payload: any = { title, appliesTo, discountType, amount: Number(amount), active: true };
     if (appliesTo === 'product' && productId) payload.productId = productId;
+    if (bank) payload.bank = bank;
+    if (paymentMethods && paymentMethods.length) payload.paymentMethods = paymentMethods;
     createMut.mutate(payload, {
       onError: (err: any) => showError(err?.message || 'Failed to create offer'),
       onSuccess: () => { reset(); if (onCreated) onCreated(); showSuccess('Offer created'); }
@@ -93,6 +99,26 @@ const OfferForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
             onChange={(e) => setAmount(Number(e.target.value))}
             className="w-full border p-2 rounded"
           />
+        </div>
+
+        <div>
+          <label className="block text-xs uppercase text-muted">Bank (optional)</label>
+          <input value={bank} onChange={(e) => setBank(e.target.value)} placeholder="e.g. HDFC, ICICI" className="w-full border p-2 rounded" />
+        </div>
+
+        <div>
+          <label className="block text-xs uppercase text-muted">Payment Methods</label>
+          <div className="flex gap-3 mt-2">
+            {['card','netbanking','upi','emi','wallet'].map(pm => (
+              <label key={pm} className="inline-flex items-center gap-2 text-xs">
+                <input type="checkbox" checked={paymentMethods.includes(pm)} onChange={(e) => {
+                  if (e.target.checked) setPaymentMethods(prev => [...prev, pm]);
+                  else setPaymentMethods(prev => prev.filter(x => x !== pm));
+                }} />
+                <span className="capitalize">{pm}</span>
+              </label>
+            ))}
+          </div>
         </div>
 
         <div className="pt-4 border-t border-accent mt-4 flex items-center justify-between">

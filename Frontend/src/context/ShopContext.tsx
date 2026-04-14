@@ -216,6 +216,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ));
   };
 
+  const clearCart = () => {
+    setCart([]);
+  };
+
   const toggleWishlist = (product: Product) => {
     setWishlist(prev => {
       const exists = prev.find(item => item.id === product.id);

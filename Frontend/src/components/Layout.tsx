@@ -301,7 +301,7 @@ const Footer = () => (
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
       <ScrollToTop />
       <AnnouncementBar />
       <Header />

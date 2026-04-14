@@ -36,6 +36,7 @@ async function start() {
         app.use('/api/users', userRoutes);
         app.use('/api/orders', orderRoutes);
         app.use('/api/offers', offerRoutes);
+        app.use('/api/promos', require('./features/promos/promoRoutes'));
 
         // start background jobs
         try { require('./jobs/abandonedCartWorker'); } catch (err) { console.error('Could not start abandoned worker', err); }

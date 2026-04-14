@@ -62,9 +62,11 @@ const updateOffer = async(req, res) => {
 
 // validate coupon code against cart payload
 // body: { code: string, items: [{ productId, price, quantity }], total }
+const User = require('../user/User');
+
 const validateOffer = async(req, res) => {
     try {
-        const { code, items = [], total = 0 } = req.body || {};
+        const { code, items = [], total = 0, userId, email, paymentMethod, paymentBank } = req.body || {};
         if (!code) return res.status(400).json({ valid: false, message: 'Missing coupon code' });
         const lookup = String(code).toUpperCase();
         const offer = await Offer.findOne({ code: lookup, status: 'active' }).lean();
@@ -86,12 +88,53 @@ const validateOffer = async(req, res) => {
         }
 
         if (applicableSubtotal <= 0) return res.status(400).json({ valid: false, message: 'Coupon does not apply to any items in the cart' });
+        // If offer has bank/payment constraints, ensure request provides matching payment info
+        if (offer.bank || (Array.isArray(offer.paymentMethods) && offer.paymentMethods.length > 0)) {
+            // Require either paymentMethod or paymentBank in request
+            const pm = paymentMethod || '';
+            const pb = paymentBank || '';
+            if (offer.bank && pb) {
+                if (String(pb).toLowerCase() !== String(offer.bank).toLowerCase()) {
+                    return res.status(400).json({ valid: false, message: 'Coupon only valid for selected bank/payment method' });
+                }
+            } else if (offer.bank && !pb) {
+                return res.status(400).json({ valid: false, message: 'Coupon requires bank/payment information' });
+            }
+            if (Array.isArray(offer.paymentMethods) && offer.paymentMethods.length > 0) {
+                if (!pm || !offer.paymentMethods.map(x => String(x).toLowerCase()).includes(String(pm).toLowerCase())) {
+                    return res.status(400).json({ valid: false, message: 'Coupon requires specific payment method' });
+                }
+            }
+        }
 
         let discount = 0;
         if (offer.discountType === 'percentage') {
             discount = Math.round((offer.amount / 100) * applicableSubtotal);
         } else {
             discount = Math.min(offer.amount, applicableSubtotal);
+        }
+
+        // If a user is provided (or from authenticated request), check if they are a "new user".
+        // New user definition: account created within last 30 days. For new users, cap discount to $10.
+        try {
+            const possibleUserId = req.user.id || req.user._id || userId;
+            const possibleEmail = email || req.user.email;
+            let foundUser = null;
+            if (possibleUserId) foundUser = await User.findById(possibleUserId).lean();
+            if (!foundUser && possibleEmail) foundUser = await User.findOne({ email: possibleEmail }).lean();
+            if (foundUser) {
+                const created = new Date(foundUser.createdAt || Date.now());
+                const ageMs = Date.now() - created.getTime();
+                const days = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+                const NEW_USER_DAYS = 30; // configurable threshold
+                const NEW_USER_CAP = 10; // cap amount in dollars for new users
+                if (days <= NEW_USER_DAYS) {
+                    // cap discount to NEW_USER_CAP
+                    discount = Math.min(discount, NEW_USER_CAP);
+                }
+            }
+        } catch (e) {
+            // ignore user-check errors and proceed with computed discount
         }
 
         const newTotal = Math.max(0, (total || 0) - discount);
