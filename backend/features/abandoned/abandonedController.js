@@ -65,9 +65,7 @@ const previewTemplate = async(req, res) => {
     }
 };
 
-module.exports = { listCarts, sendNow, previewTemplate };
 const crypto = require('crypto');
-const AbandonedCart = require('./AbandonedCart');
 
 const upsertCart = async(req, res) => {
     try {
@@ -86,14 +84,5 @@ const upsertCart = async(req, res) => {
     }
 };
 
-const listCarts = async(req, res) => {
-    try {
-        const carts = await AbandonedCart.find({ recovered: false }).sort({ lastUpdated: -1 }).limit(200).lean();
-        return res.json({ ok: true, carts });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Could not list carts' });
-    }
-};
 
-module.exports = { upsertCart, listCarts };
+module.exports = { upsertCart, listCarts, sendNow, previewTemplate };
