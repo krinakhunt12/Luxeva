@@ -41,15 +41,15 @@ export default function About() {
       {/* Hero Section */}
       <section className="pt-40 pb-24 border-b border-accent">
         <div className="container mx-auto px-6">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] as const }}
             className="max-w-4xl mx-auto text-center space-y-8"
           >
             <span className="text-[10px] uppercase tracking-[0.6em] font-bold text-gold inline-block mb-2">Our Heritage</span>
-            <h1 className="text-4xl md:text-6xl font-light tracking-tighter uppercase leading-[0.85] text-primary">
-              Etching <br /> 
+            <h1 className="text-6xl md:text-8xl font-light uppercase tracking-tighter leading-none text-primary">
+              Etching <br />
               <span className="italic font-serif normal-case tracking-normal">Style</span> in <br />
               History
             </h1>
@@ -64,13 +64,13 @@ export default function About() {
       <section className="py-32 bg-white">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <motion.div 
+            <motion.div
               {...fadeInUp}
               className="relative aspect-[4/5] overflow-hidden group shadow-2xl"
             >
-              <img 
-                src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=800&auto=format&fit=crop" 
-                alt="Craftsmanship" 
+              <img
+                src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=800&auto=format&fit=crop"
+                alt="Craftsmanship"
                 className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-black/10 transition-opacity duration-700 group-hover:opacity-0" />
@@ -81,7 +81,7 @@ export default function About() {
                 <h2 className="text-4xl md:text-5xl font-light tracking-tight uppercase">The Philosophy</h2>
                 <div className="h-1 w-20 bg-gold" />
               </motion.div>
-              
+
               <motion.div {...fadeInUp} transition={{ ...fadeInUp.transition, delay: 0.2 }} className="prose prose-sm text-muted leading-loose space-y-6">
                 <p>
                   At the heart of Luxeva lies a commitment to the enduring. In a world of fast-paced trends and fleeting moments, we choose to look back at the traditions that stood the test of time, and forward to a future of sustainable elegance.
@@ -94,7 +94,7 @@ export default function About() {
                 </p>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 variants={stagger}
                 initial="initial"
                 whileInView="whileInView"
@@ -126,7 +126,7 @@ export default function About() {
             <p className="text-muted text-xs uppercase tracking-[0.3em]">The pillars that sustain us</p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             variants={stagger}
             initial="initial"
             whileInView="whileInView"
@@ -139,8 +139,8 @@ export default function About() {
               { icon: <Star size={24} />, title: "Excellence", desc: "Meticulous attention to detail in every hand-finished seam." },
               { icon: <Heart size={24} />, title: "Soul", desc: "Garments crafted with passion by master artisans." }
             ].map((value, i) => (
-              <motion.div 
-                key={i} 
+              <motion.div
+                key={i}
                 variants={fadeInUp}
                 className="bg-white p-10 border border-accent hover:border-gold transition-colors duration-500 group text-center"
               >
@@ -177,17 +177,17 @@ export default function About() {
                 </button>
               </motion.div>
             </div>
-            
-            <motion.div 
+
+            <motion.div
               style={{ scale: 1.1 }}
               whileInView={{ scale: 1 }}
               transition={{ duration: 1.5 }}
               className="relative order-1 lg:order-2"
             >
               <div className="aspect-square bg-accent/10 rounded-full absolute -top-10 -right-10 w-64 h-64 blur-3xl" />
-              <img 
-                src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop" 
-                alt="Process" 
+              <img
+                src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop"
+                alt="Process"
                 className="relative z-10 w-full h-full object-cover rounded shadow-2xl border border-white/10"
               />
             </motion.div>

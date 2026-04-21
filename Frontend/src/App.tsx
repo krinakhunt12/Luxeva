@@ -13,7 +13,15 @@ import WishlistShare from './pages/WishlistShare';
 import Checkout from './pages/Checkout';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import { Search, ShippingPolicy, ReturnsPolicy, SizeGuidePage, FAQ, PrivacyPolicy, RefundPolicy, Locations, TermsPage } from './pages/StaticPages';
+import Search from './pages/Search';
+import ShippingPolicy from './pages/ShippingPolicy';
+import ReturnsPolicy from './pages/ReturnsPolicy';
+import SizeGuide from './pages/SizeGuide';
+import FAQ from './pages/FAQ';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import RefundPolicy from './pages/RefundPolicy';
+import StoreLocations from './pages/StoreLocations';
+import TermsConditions from './pages/TermsConditions';
 import { Login, SignUp } from './features/auth/Auth';
 import { Account } from './pages/Account';
 import { OrdersPage } from './features/orders/pages/OrdersPage';
@@ -104,12 +112,12 @@ export default function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/shipping" element={<ShippingPolicy />} />
             <Route path="/returns" element={<ReturnsPolicy />} />
-            <Route path="/size-guide" element={<SizeGuidePage />} />
+            <Route path="/size-guide" element={<SizeGuide />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/refund" element={<RefundPolicy />} />
-            <Route path="/locations" element={<Locations />} />
-            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/locations" element={<StoreLocations />} />
+            <Route path="/terms" element={<TermsConditions />} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
