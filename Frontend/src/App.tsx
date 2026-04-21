@@ -13,7 +13,7 @@ import WishlistShare from './pages/WishlistShare';
 import Checkout from './pages/Checkout';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import { Search, ShippingPolicy, ReturnsPolicy, SizeGuidePage, FAQ } from './pages/StaticPages';
+import { Search, ShippingPolicy, ReturnsPolicy, SizeGuidePage, FAQ, PrivacyPolicy, RefundPolicy, Locations, TermsPage } from './pages/StaticPages';
 import { Login, SignUp } from './features/auth/Auth';
 import { Account } from './pages/Account';
 import { OrdersPage } from './features/orders/pages/OrdersPage';
@@ -106,6 +106,10 @@ export default function App() {
             <Route path="/returns" element={<ReturnsPolicy />} />
             <Route path="/size-guide" element={<SizeGuidePage />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/refund" element={<RefundPolicy />} />
+            <Route path="/locations" element={<Locations />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

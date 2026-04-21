@@ -57,7 +57,19 @@ const Header = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Collections', path: '/collections', hasMegaMenu: true },
-    { name: 'About', path: '/about' },
+    { 
+      name: 'About', 
+      path: '/about',
+      dropdown: [
+        { name: 'About us', path: '/about' },
+        { name: 'Privacy policy', path: '/privacy' },
+        { name: 'Refund policy', path: '/refund' },
+        { name: 'Faq\'s', path: '/faq' },
+        { name: 'Store location', path: '/locations' },
+        { name: 'Shipping & return', path: '/shipping' },
+        { name: 'Terms & condition', path: '/terms' },
+      ]
+    },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -66,9 +78,17 @@ const Header = () => {
       "sticky top-0 left-0 w-full z-50 transition-all duration-500",
       (isScrolled || !isHome) ? "bg-bg/95 backdrop-blur-md border-b border-accent py-4" : "bg-transparent py-6"
     )}>
-      <div className="container mx-auto px-6 flex items-center justify-between">
-        {/* Left: Nav */}
-        <nav className="hidden lg:flex items-center gap-8">
+      {/* Left: Logo */}
+
+      <div className="container mx-auto px-6 flex items-center justify-between relative">
+        {/* Left: Logo */}
+        <Link to="/" className="z-10" aria-label="Luxeva home">
+          <h1 className="text-2xl tracking-[0.3em] font-light uppercase">Luxeva</h1>
+        </Link>
+
+
+        {/* Center: Nav */}
+        <nav className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
           {navLinks.map((link) => (
             <div key={link.name} className="group relative">
               <Link 
@@ -80,7 +100,7 @@ const Header = () => {
               </Link>
               
               {link.hasMegaMenu && (
-                <div className="absolute top-full left-0 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                   <div className="bg-bg border border-accent p-8 w-[600px] shadow-xl grid grid-cols-3 gap-8">
                     <div>
                       <h4 className="text-[10px] uppercase tracking-widest font-bold mb-4 text-muted">Shop By Category</h4>
@@ -108,26 +128,65 @@ const Header = () => {
                   </div>
                 </div>
               )}
+
+              {/* Standard Dropdown */}
+              {link.dropdown && (
+                <div className="absolute top-full left-0 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                  <div className="bg-white border border-accent py-4 w-56 shadow-2xl">
+                    <ul className="space-y-1">
+                      {link.dropdown.map((item) => (
+                        <li key={item.name}>
+                          <Link 
+                            to={item.path} 
+                            className="block px-8 py-3 text-[13px] text-primary hover:bg-bg hover:text-gold transition-all duration-300 font-light"
+                          >
+                            {item.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </nav>
 
         {/* Mobile Menu Toggle */}
-        <button className="lg:hidden" onClick={() => setIsMobileMenuOpen(true)}>
+        <button className="lg:hidden z-10" onClick={() => setIsMobileMenuOpen(true)}>
           <Menu size={20} />
         </button>
-
-        {/* Center: Logo */}
-        <Link to="/" className="absolute left-1/2 -translate-x-1/2" aria-label="Luxeva home">
-          <h1 className="text-2xl tracking-[0.3em] font-light uppercase">Luxeva</h1>
-        </Link>
 
         {/* Right: Icons */}
         <div className="flex items-center gap-6">
           <Link to="/search" className="hover:text-gold transition-colors">
             <Search size={18} strokeWidth={1.5} />
           </Link>
-          
+          <Link to="/wishlist" className="hover:text-gold transition-colors relative">
+            <Heart size={18} strokeWidth={1.5} />
+            {wishlist.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-gold text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                {wishlist.length}
+              </span>
+            )}
+          </Link>
+          <button
+            onClick={() => navigate('/cart')}
+            className="hover:text-gold transition-colors relative"
+          >
+            <ShoppingBag size={18} strokeWidth={1.5} />
+            {cartCount > 0 && (
+              <motion.span
+                key={cartCount}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="absolute -top-2 -right-2 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold"
+              >
+                {cartCount}
+              </motion.span>
+            )}
+          </button>
+
           {!user ? (
             <div className="flex items-center gap-3">
               <Link to="/login" className="text-sm uppercase tracking-widest px-3 py-2 hover:text-gold transition-colors">Login</Link>
@@ -152,7 +211,7 @@ const Header = () => {
                       <li><Link to="/account" className="text-[10px] uppercase tracking-widest hover:text-gold block">Profile</Link></li>
                       <li><Link to="/orders" className="text-[10px] uppercase tracking-widest hover:text-gold block">Orders</Link></li>
                       <li>
-                        <button 
+                        <button
                           onClick={() => logout()}
                           className="text-[10px] uppercase tracking-widest text-red-500 hover:text-red-600 block w-full text-left"
                         >
@@ -166,30 +225,7 @@ const Header = () => {
             </div>
           )}
 
-          <Link to="/wishlist" className="hover:text-gold transition-colors relative">
-            <Heart size={18} strokeWidth={1.5} />
-            {wishlist.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-gold text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
-          <button 
-            onClick={() => navigate('/cart')}
-            className="hover:text-gold transition-colors relative"
-          >
-            <ShoppingBag size={18} strokeWidth={1.5} />
-            {cartCount > 0 && (
-              <motion.span 
-                key={cartCount}
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="absolute -top-2 -right-2 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold"
-              >
-                {cartCount}
-              </motion.span>
-            )}
-          </button>
+
         </div>
       </div>
 
@@ -197,14 +233,14 @@ const Header = () => {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
             />
-            <motion.div 
+            <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
@@ -219,9 +255,9 @@ const Header = () => {
               </div>
               <nav className="flex flex-col gap-6">
                 {navLinks.map((link) => (
-                  <Link 
-                    key={link.name} 
-                    to={link.path} 
+                  <Link
+                    key={link.name}
+                    to={link.path}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="text-lg uppercase tracking-widest font-light border-b border-accent pb-2"
                   >
@@ -253,7 +289,7 @@ const Footer = () => (
           ))}
         </div>
       </div>
-      
+
       <div>
         <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-8">Shop</h4>
         <ul className="space-y-4">
@@ -278,16 +314,16 @@ const Footer = () => (
         <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-8">Newsletter</h4>
         <p className="text-xs text-muted mb-6">Join our list for early access to new collections and exclusive offers.</p>
         <form className="flex border-b border-primary pb-2">
-          <input 
-            type="email" 
-            placeholder="Email Address" 
+          <input
+            type="email"
+            placeholder="Email Address"
             className="bg-transparent text-xs w-full focus:outline-none"
           />
           <button type="submit" className="text-[10px] uppercase tracking-widest font-bold">Join</button>
         </form>
       </div>
     </div>
-    
+
     <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-accent/50">
       <p className="text-[10px] text-muted uppercase tracking-widest">© 2026 Luxeva. All rights reserved.</p>
       <div className="flex gap-4 opacity-50 grayscale">

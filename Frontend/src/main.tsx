@@ -34,12 +34,16 @@ createRoot(document.getElementById('root')!).render(
               color: '#111111',
               fontFamily: '"DM Sans", sans-serif',
               borderRadius: '0px',
-              fontSize: '12px',
+              fontSize: '11px',
               letterSpacing: '0.05em',
               textTransform: 'uppercase' as any,
               fontWeight: 600,
-            }
+              padding: '16px',
+            },
+            className: 'luxeva-toast',
           } as any}
+          // Sonner uses class-based styling for close buttons, 
+          // but we can also inject global CSS to handle the close icon specifically
         />
         <BrowserRouter>
           <ShopProvider>

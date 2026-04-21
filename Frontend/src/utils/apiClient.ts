@@ -1,4 +1,4 @@
-const BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:4000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 import { showSuccess, showError } from './toastService';
 
 export interface FetchOptions extends RequestInit {
@@ -50,15 +50,14 @@ export async function apiFetch(path: string, options: FetchOptions = {}) {
     }
     const data = await res.json();
 
-    // Show success toast for non-GET requests (mutations)
-    if (!options.hideSuccessToast && options.method && options.method !== 'GET') {
-      const message = options.successMessage || data?.message || 'Operation successful';
-      showSuccess(message);
+    // Show success toast for non-GET requests only if a custom successMessage is provided
+    if (!options.hideSuccessToast && options.method && options.method !== 'GET' && options.successMessage) {
+      showSuccess(options.successMessage);
     }
 
     return data;
   } catch (error: any) {
-    // Only show error if it hasn't been shown
+    // Only show error if it hasn't been shown by the !res.ok block
     if (!options.hideErrorToast && error instanceof TypeError && error.message === 'Failed to fetch') {
       showError('Network error: Could not connect to server');
     }

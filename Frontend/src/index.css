@@ -27,3 +27,45 @@
     text-wrap: balance;
   }
 }
+
+/* Sonner Custom Styling */
+[data-sonner-toast] {
+  --close-button-bg: #FAFAF8 !important;
+  --close-button-color: #111111 !important;
+  --close-button-border: #E8E4DF !important;
+}
+
+[data-sonner-toast][data-rich-colors="true"][data-type="success"] [data-close-button],
+[data-sonner-toast][data-rich-colors="true"][data-type="error"] [data-close-button],
+[data-sonner-toast][data-rich-colors="true"] [data-close-button] {
+  background: #111111 !important;
+  color: #FAFAF8 !important;
+  border-color: #111111 !important;
+  opacity: 1 !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  transform: translate(30%, -30%) !important;
+  border-radius: 0px !important;
+  width: 22px !important;
+  height: 22px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  border: 1px solid transparent !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background: #C9A96E !important;
+  border-color: #C9A96E !important;
+  color: #FFFFFF !important;
+}
+
+/* Remove default success/error icon colors if they clash */
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: #111111 !important;
+}

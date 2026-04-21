@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Search as SearchIcon, X } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 
 type Facets = { sizes: string[]; colors: string[]; categories: string[] };
 
@@ -147,172 +148,112 @@ export const Search = () => {
   );
 };
 
-export const About = () => (
-  <div className="pt-32 pb-20 bg-bg">
-    <div className="container mx-auto px-6">
-      <div className="max-w-4xl mx-auto space-y-20">
-        <div className="text-center space-y-8">
-          <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-gold">Our Story</span>
-            <h1 className="text-6xl md:text-8xl font-light tracking-tighter uppercase leading-[0.8]">The Art of <br /> <span className="italic font-serif">Minimalism</span></h1>
-        </div>
-
-        <div className="aspect-[16/9] bg-accent overflow-hidden">
-          <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop" alt="About" className="w-full h-full object-cover" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-          <div className="space-y-8">
-            <h2 className="text-4xl font-light tracking-tight italic font-serif leading-tight">Founded on the principle that quality matters more than quantity.</h2>
-            <p className="text-muted text-lg leading-relaxed">
-              Luxeva was born in 2020 with a simple mission: to create a wardrobe of essentials that are as beautiful as they are sustainable. We believe that fashion should be slow, thoughtful, and enduring.
-            </p>
-          </div>
-          <div className="aspect-[3/4] bg-accent overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000&auto=format&fit=crop" alt="About 2" className="w-full h-full object-cover" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-20 border-t border-accent">
-          <div className="space-y-4">
-            <h4 className="text-[10px] uppercase tracking-widest font-bold">Ethical Sourcing</h4>
-            <p className="text-xs text-muted leading-relaxed">We partner with family-owned mills in Italy and Portugal that share our commitment to fair labor and environmental stewardship.</p>
-          </div>
-          <div className="space-y-4">
-            <h4 className="text-[10px] uppercase tracking-widest font-bold">Timeless Design</h4>
-            <p className="text-xs text-muted leading-relaxed">Our design process starts with the fabric. We create silhouettes that are modern yet classic, ensuring they never go out of style.</p>
-          </div>
-          <div className="space-y-4">
-            <h4 className="text-[10px] uppercase tracking-widest font-bold">Radical Transparency</h4>
-            <p className="text-xs text-muted leading-relaxed">We believe you have the right to know where your clothes come from and how much they cost to make.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-export const Contact = () => (
-  <div className="pt-32 pb-20 bg-bg">
-    <div className="container mx-auto px-6">
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20">
-        <div className="space-y-12">
-          <div className="space-y-6">
-            <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-gold">Contact Us</span>
-            <h1 className="text-6xl font-light tracking-tighter uppercase leading-[0.8]">Get in <br /> <span className="italic font-serif">Touch</span></h1>
-            <p className="text-muted text-lg leading-relaxed max-w-md">
-              Whether you have a question about sizing, shipping, or just want to say hello, we'd love to hear from you.
-            </p>
-          </div>
-
-          <div className="space-y-8">
-            <div>
-              <h4 className="text-[10px] uppercase tracking-widest font-bold mb-4">Customer Care</h4>
-              <p className="text-sm text-muted">support@luxeva.com</p>
-              <p className="text-sm text-muted">+91 98765 43210</p>
-            </div>
-            <div>
-              <h4 className="text-[10px] uppercase tracking-widest font-bold mb-4">Press & Wholesale</h4>
-              <p className="text-sm text-muted">press@luxeva.com</p>
-            </div>
-            <div>
-              <h4 className="text-[10px] uppercase tracking-widest font-bold mb-4">Our Studio</h4>
-              <p className="text-sm text-muted">123 Minimalist Way, Design District</p>
-              <p className="text-sm text-muted">Mumbai, MH 400001</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white border border-accent p-12 shadow-sm">
-          <form className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold">First Name</label>
-                <input type="text" className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold">Last Name</label>
-                <input type="text" className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest font-bold">Email Address</label>
-              <input type="email" className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest font-bold">Subject</label>
-              <select className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors">
-                <option>General Inquiry</option>
-                <option>Order Support</option>
-                <option>Returns & Exchanges</option>
-                <option>Wholesale</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest font-bold">Message</label>
-              <textarea rows={6} className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors resize-none"></textarea>
-            </div>
-            <button className="w-full bg-primary text-white py-5 text-[10px] uppercase tracking-widest font-bold hover:bg-gold transition-colors">
-              Send Message
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 export const ShippingPolicy = () => (
-  <div className="pt-32 pb-20 bg-bg">
-    <div className="container mx-auto px-6 max-w-3xl">
-      <h1 className="text-4xl font-light mb-6">Shipping Policy</h1>
-      <p className="text-muted mb-4">We ship domestically across India and to select international destinations. This page explains timelines, costs, tracking, and what to expect after you place an order.</p>
+  <div className="pt-40 pb-24 bg-bg">
+    <div className="container mx-auto px-6 max-w-4xl">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+        <div className="text-center space-y-4">
+          <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-gold">Logistics</span>
+          <h1 className="text-5xl md:text-7xl font-light uppercase tracking-tighter">Shipping <br /> & Handling</h1>
+        </div>
 
-      <h3 className="text-lg font-bold mt-6">Order processing</h3>
-      <p className="text-muted">Orders are usually processed within 1–3 business days. Processing includes order verification, quality checks, and packing. During sale periods processing may take longer.</p>
+        <div className="prose prose-sm max-w-none text-muted leading-loose space-y-12 font-light">
+          <section className="space-y-6">
+            <h2 className="text-primary text-lg uppercase tracking-widest font-bold border-b border-accent pb-2">Overview</h2>
+            <p>At Luxeva, we believe the experience of luxury begins the moment you click 'Order'. Each package is meticulously wrapped in our sustainable signature packaging and handled with the utmost care to ensure it reaches you in pristine condition.</p>
+          </section>
 
-      <h3 className="text-lg font-bold mt-6">Domestic Shipping</h3>
-      <ul className="list-disc pl-6 text-muted">
-        <li><strong>Standard:</strong> 3–7 business days (free over ₹2000).</li>
-        <li><strong>Express:</strong> 1–3 business days (additional fee applies).</li>
-      </ul>
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="space-y-4">
+              <h3 className="text-sm uppercase tracking-widest font-bold text-primary">Domestic Pacing (India)</h3>
+              <p>We partner with premium couriers to ensure secure delivery across all pin codes.</p>
+              <ul className="space-y-2 list-none p-0">
+                <li className="flex justify-between border-b border-accent py-2"><span>Standard (Free over ₹2000)</span> <span>5–7 Days</span></li>
+                <li className="flex justify-between border-b border-accent py-2"><span>Express (Major Cities)</span> <span>2–3 Days</span></li>
+                <li className="flex justify-between border-b border-accent py-2"><span>Mumbai Same Day</span> <span>Order by 10am</span></li>
+              </ul>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-sm uppercase tracking-widest font-bold text-primary">International reach</h3>
+              <p>We ship to 40+ countries. Timelines vary based on customs clearing processes.</p>
+              <ul className="space-y-2 list-none p-0">
+                <li className="flex justify-between border-b border-accent py-2"><span>UAE & SE Asia</span> <span>7–10 Days</span></li>
+                <li className="flex justify-between border-b border-accent py-2"><span>Europe & USA</span> <span>10–14 Days</span></li>
+              </ul>
+            </div>
+          </section>
 
-      <h3 className="text-lg font-bold mt-6">International Shipping</h3>
-      <p className="text-muted">We ship to selected countries. Transit times and rates vary by destination. Import duties and taxes are not included and are the recipient's responsibility.</p>
+          <section className="bg-white p-10 border border-accent space-y-6">
+            <h3 className="text-sm uppercase tracking-widest font-bold text-primary">Duty & Taxes</h3>
+            <p className="text-xs italic">For international orders, import duties and local taxes are determined by the destination country and are the sole responsibility of the customer. These must be paid for the courier to release the package.</p>
+          </section>
 
-      <h3 className="text-lg font-bold mt-6">Tracking & delivery</h3>
-      <p className="text-muted">Once your order ships you will receive an email with a tracking number. Use the carrier link to track delivery status. If a delivery attempt fails, the carrier will follow their retry policy — please contact support if you don't receive your parcel within the expected timeframe.</p>
-
-      <h3 className="text-lg font-bold mt-6">Lost or damaged items</h3>
-      <p className="text-muted">If your order arrives damaged or is lost in transit, contact support with photos and your order number. We will investigate and work with the carrier to resolve the issue, offering a replacement or refund where appropriate.</p>
+          <section className="space-y-4">
+            <h2 className="text-primary text-sm uppercase tracking-widest font-bold">Failed Delivery Attempts</h2>
+            <p>Our couriers will attempt delivery exactly three times. If you are unavailable, the package will be held at the local hub for 48 hours before being returned to our warehouse. Redelivery fees may apply for returned shipments.</p>
+          </section>
+        </div>
+      </motion.div>
     </div>
   </div>
 );
 
 export const ReturnsPolicy = () => (
-  <div className="pt-32 pb-20 bg-bg">
-    <div className="container mx-auto px-6 max-w-3xl">
-      <h1 className="text-4xl font-light mb-6">Returns & Exchanges</h1>
-      <p className="text-muted mb-4">We want you to be happy with your purchase. If a product doesn't meet your expectations you can return or exchange it under the conditions below.</p>
+  <div className="pt-40 pb-24 bg-bg">
+    <div className="container mx-auto px-6 max-w-4xl">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+        <div className="text-center space-y-4">
+          <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-gold">Concierge Service</span>
+          <h1 className="text-5xl md:text-7xl font-light uppercase tracking-tighter">Returns <br /> & Exchanges</h1>
+        </div>
 
-      <h3 className="text-lg font-bold mt-6">Eligibility</h3>
-      <ul className="list-disc pl-6 text-muted">
-        <li>Returns accepted within 14 days of delivery.</li>
-        <li>Items must be unworn, unwashed, and with original tags and packaging.</li>
-        <li>Final-sale and intimate items (where hygiene is a concern) are non-returnable — these will be marked on the product page.</li>
-      </ul>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <aside className="lg:col-span-1 space-y-8">
+            <div className="bg-white p-8 border border-accent">
+              <h4 className="text-[10px] uppercase tracking-widest font-bold mb-4">Quick Stats</h4>
+              <ul className="space-y-4 text-xs font-light">
+                <li className="flex justify-between"><span className="text-muted">Return Window</span> <span className="font-bold">14 Days</span></li>
+                <li className="flex justify-between"><span className="text-muted">Processing Time</span> <span className="font-bold">7 Days</span></li>
+                <li className="flex justify-between"><span className="text-muted">Restocking Fee</span> <span className="font-bold">₹0</span></li>
+              </ul>
+            </div>
+            <div className="p-8 border border-gold/20 bg-gold/5">
+              <p className="text-xs italic text-muted">"Our aim is 100% satisfaction. If it doesn't fit your life, it shouldn't be in your closet."</p>
+            </div>
+          </aside>
 
-      <h3 className="text-lg font-bold mt-6">How to return</h3>
-      <ol className="list-decimal pl-6 text-muted">
-        <li>Contact support@luxeva.com with your order number and reason for return.</li>
-        <li>We will provide a returns authorization and instructions.</li>
-        <li>Ship the item back using a tracked service and retain the proof of shipment.</li>
-      </ol>
+          <main className="lg:col-span-2 space-y-10 font-light leading-loose text-muted">
+            <section className="space-y-4">
+              <h3 className="text-primary text-sm uppercase tracking-widest font-bold">The Return Condition</h3>
+              <p>Items must be returned in their original, unused state—unwashed, with all security tags attached, and in our signature box. We cannot accept returns of pieces showing any signs of wear, including makeup stains, perfume odors, or alterations.</p>
+            </section>
 
-      <h3 className="text-lg font-bold mt-6">Refunds & timelines</h3>
-      <p className="text-muted">Once we receive and inspect the return, refunds are processed within 5–7 business days. Refunds are issued to the original payment method. Shipping costs are refundable only for items returned due to our error.</p>
+            <section className="space-y-6">
+              <h3 className="text-primary text-sm uppercase tracking-widest font-bold">The 3-Step Process</h3>
+              <div className="space-y-8">
+                {[
+                  { step: "01", title: "Initiate Request", desc: "Contact our concierge at support@luxeva.com with your order number. A return authorization will be sent within 24 hours." },
+                  { step: "02", title: "Secure Packing", desc: "Place the items back in their original protective wrap. Ensure the return ID is written clearly on the outer box." },
+                  { step: "03", title: "Courier Pickup", desc: "We will schedule a complimentary pickup for domestic orders. For international returns, shipping costs are the customer's responsibility." }
+                ].map(item => (
+                  <div key={item.step} className="flex gap-6 items-start">
+                    <span className="text-2xl font-serif text-gold italic">{item.step}</span>
+                    <div>
+                      <h4 className="text-primary text-xs uppercase tracking-widest font-black mb-2">{item.title}</h4>
+                      <p className="text-sm">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-      <h3 className="text-lg font-bold mt-6">Exchanges</h3>
-      <p className="text-muted">If you need a different size and stock is available we will help facilitate an exchange. Exchanges depend on inventory — if the requested item is unavailable we will issue a refund or offer store credit.</p>
+            <section className="p-8 bg-primary text-white space-y-4">
+              <h4 className="text-[10px] uppercase tracking-widest font-bold text-gold">Final Sale Items</h4>
+              <p className="text-xs font-light">Customized pieces, personalized monogramming, and select delicate evening wear marked as 'Final Sale' are ineligible for return or exchange unless a manufacturing defect is verified by our quality team.</p>
+            </section>
+          </main>
+        </div>
+      </motion.div>
     </div>
   </div>
 );
@@ -355,31 +296,185 @@ export const SizeGuidePage = () => (
 );
 
 export const FAQ = () => (
-  <div className="pt-32 pb-20 bg-bg">
+  <div className="pt-40 pb-24 bg-bg">
+    <div className="container mx-auto px-6 max-w-4xl">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-16">
+        <div className="text-center space-y-4">
+          <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-gold">Assistance</span>
+          <h1 className="text-5xl md:text-7xl font-light uppercase tracking-tighter">Common <br /> Inquiries</h1>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12">
+          <div className="space-y-8">
+            <h3 className="text-primary text-xs uppercase tracking-widest font-bold border-b border-accent pb-2">Orders & Delivery</h3>
+            {[
+              { q: "How do I track my Luxeva package?", a: "Once dispatched, you will receive an SMS and email with a unique tracking link from our premium logistics partner." },
+              { q: "Can I redirect a package in transit?", a: "To ensure absolute security, address changes are not permitted once the package has physically left our warehouse." },
+              { q: "What if my item arrives with a defect?", a: "Contact our quality team within 48 hours for immediate replacement under our 'Pristine Guarantee'." }
+            ].map((item, i) => (
+              <div key={i} className="space-y-2">
+                <p className="text-primary font-medium text-sm">{item.q}</p>
+                <p className="text-muted text-xs font-light leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-8">
+            <h3 className="text-primary text-xs uppercase tracking-widest font-bold border-b border-accent pb-2">Product & Styling</h3>
+            {[
+              { q: "Are your materials sustainable?", a: "Yes. 90% of our textiles are GOTS certified organic or recycled from luxury post-consumer waste." },
+              { q: "How do I ensure the perfect fit?", a: "Each product page features exact garment measurements. You can also book a virtual styling session via our contact page." },
+              { q: "Do you offer bespoke tailoring?", a: "We offer complimentary hems and sleeves shortening for our 'Signature' range at our flagship boutiques." }
+            ].map((item, i) => (
+              <div key={i} className="space-y-2">
+                <p className="text-primary font-medium text-sm">{item.q}</p>
+                <p className="text-muted text-xs font-light leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  </div>
+);
+
+export const PrivacyPolicy = () => (
+  <div className="pt-40 pb-24 bg-bg">
     <div className="container mx-auto px-6 max-w-3xl">
-      <h1 className="text-4xl font-light mb-6">Frequently Asked Questions</h1>
-      <div className="space-y-6 text-muted">
-        <div>
-          <h4 className="font-bold">How long will my order take to arrive?</h4>
-          <p>Orders are processed within 1–3 business days; domestic delivery typically takes 3–7 business days for standard shipping. Express shipping is 1–3 business days. International delivery times vary.</p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-16">
+        <div className="space-y-6">
+          <h1 className="text-5xl font-light uppercase tracking-tighter">Your Privacy</h1>
+          <p className="text-muted font-light leading-loose">At Luxeva, we hold your trust in high regard. This document elucidates the meticulous care we take in managing your digital identity.</p>
         </div>
-        <div>
-          <h4 className="font-bold">Can I change or cancel my order?</h4>
-          <p>Contact support immediately with your order number. If your order hasn't been shipped we may be able to cancel or update it. Once shipped, you'll need to follow the returns process.</p>
+
+        <div className="space-y-12 text-muted font-light leading-loose text-sm">
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">1. Information Stewardship</h4>
+            <p>We collect essential data—name, email, and biometric sizing (if provided)—to curate a seamless shopping journey. We act as sole guardians of this data; we never sell or trade your details for third-party marketing.</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">2. Digital Footprints</h4>
+            <p>Web 'cookies' are utilized purely to enhance site performance and remember your preferences. This includes language selection, saved items in your wishlist, and recent search history.</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">3. Secure Transactions</h4>
+            <p>Financial data is never stored on our servers. All payments are routed through PCI-compliant gateways (Stripe, Razorpay) featuring 256-bit SSL encryption.</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">4. Your Legal Rights</h4>
+            <p>You reserve the right to access, rectify, or demand the erasure of your personal records at any point. To do so, please contact our Data Protection Officer at privacy@luxeva.com.</p>
+          </div>
         </div>
-        <div>
-          <h4 className="font-bold">What payment methods do you accept?</h4>
-          <p>We accept major credit/debit cards, UPI, netbanking and popular wallets. All payments are processed securely.</p>
+      </motion.div>
+    </div>
+  </div>
+);
+
+export const RefundPolicy = () => (
+  <div className="pt-40 pb-24 bg-bg">
+    <div className="container mx-auto px-6 max-w-3xl">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-16">
+        <div className="space-y-6">
+          <h1 className="text-5xl font-light uppercase tracking-tighter">Refund <br /> Framework</h1>
+          <p className="text-muted font-light leading-loose">The Luxeva approach to refunds is built on transparency and speed. We recognize that sometimes a piece isn't the right fit, and we ensure the transition back is effortless.</p>
         </div>
-        <div>
-          <h4 className="font-bold">How do I care for my items?</h4>
-          <p>Care instructions vary by item — check the product page and garment label. When in doubt, we recommend gentle machine wash or dry clean as specified on the label.</p>
+
+        <div className="space-y-12 text-muted font-light leading-loose text-sm">
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">Quality Inspection</h4>
+            <p>Upon arrival at our distribution center, each return undergoes a 12-point quality check by our master tailors. Once the item is verified as pristine, your refund is approved instantly.</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">Payment Methods</h4>
+            <p>Refunds are always issued to the original source of payment. For Credit/Debit card transactions, the credit typically reflects within 5–7 business days, depending on your banking institution's processing cycles.</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">Store Credit Option</h4>
+            <p>Should you prefer, we can issue an immediate digital Luxeva Gift Card for 110% of the return value—providing an additional 10% toward your next purchase.</p>
+          </div>
         </div>
-        <div>
-          <h4 className="font-bold">How do promotions and discount codes work?</h4>
-          <p>Only one promotion can be applied per order unless stated otherwise. Discounts cannot be combined with store credit unless specified.</p>
+      </motion.div>
+    </div>
+  </div>
+);
+
+export const Locations = () => (
+  <div className="pt-40 pb-24 bg-bg">
+    <div className="container mx-auto px-6 max-w-5xl">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-16">
+        <div className="text-center space-y-4">
+          <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-gold">Our Boutiques</span>
+          <h1 className="text-5xl md:text-7xl font-light uppercase tracking-tighter">Visit Our <br /> Spaces</h1>
         </div>
-      </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          {[
+            { 
+              city: "Mumbai", 
+              name: "Flagship Atelier", 
+              address: "123 Minimalist Way, Design District, MH 400001",
+              services: ["Personal Styling", "Made-to-Measure", "Heritage Archive"],
+              image: "https://images.unsplash.com/photo-1582037928869-676554628ec3?q=80&w=800&auto=format&fit=crop"
+            },
+            { 
+              city: "New Delhi", 
+              name: "Capital Emporium", 
+              address: "Square 45, DLF Phase V, DL 110001",
+              services: ["Styling Lounge", "Alteration Studio", "Click & Collect"],
+              image: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?q=80&w=800&auto=format&fit=crop"
+            }
+          ].map((loc, i) => (
+            <motion.div key={i} whileHover={{ y: -10 }} className="space-y-8 group">
+              <div className="aspect-[16/9] overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700">
+                <img src={loc.image} alt={loc.name} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" />
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <span className="text-[8px] uppercase tracking-widest font-black text-gold">{loc.city}</span>
+                    <h3 className="text-2xl font-light uppercase tracking-widest">{loc.name}</h3>
+                  </div>
+                </div>
+                <p className="text-xs text-muted leading-relaxed max-w-xs">{loc.address}</p>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {loc.services.map(s => (
+                    <span key={s} className="px-3 py-1 border border-accent text-[8px] uppercase tracking-widest text-muted">{s}</span>
+                  ))}
+                </div>
+                <button className="pt-4 text-[9px] uppercase tracking-[0.3em] font-bold border-b border-primary hover:text-gold hover:border-gold transition-colors">Get Directions</button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  </div>
+);
+
+export const TermsPage = () => (
+  <div className="pt-40 pb-24 bg-bg">
+    <div className="container mx-auto px-6 max-w-3xl">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-16">
+        <div className="space-y-6">
+          <h1 className="text-5xl font-light uppercase tracking-tighter">Terms of Service</h1>
+          <p className="text-muted font-light leading-loose">Engagement with the Luxeva platform denotes acceptance of the following legal stipulations. We advice a thorough reading of these conditions to ensure a mutual understanding of our partnership.</p>
+        </div>
+
+        <div className="space-y-12 text-muted font-light leading-loose text-sm">
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">I. Intellectual Assets</h4>
+            <p>All creative assets—including but not limited to photography, bespoke silhouettes, and brand narratives—remain the exclusive intellectual property of Luxeva Pvt. Ltd. Unauthorized commercial use is strictly prohibited.</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">II. Order Acceptance</h4>
+            <p>An order receipt email does not constitute a legal contract. We reserve the right to decline orders due to stock discrepancies, pricing errors, or suspected fraudulent activity.</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-primary font-bold uppercase tracking-widest text-[10px]">III. Ethical Use</h4>
+            <p>Our platform is designed for the enjoyment of individual collectors. We reserve the right to limit quantities or suspend accounts identified as bulk resellers or bots.</p>
+          </div>
+        </div>
+      </motion.div>
     </div>
   </div>
 );
