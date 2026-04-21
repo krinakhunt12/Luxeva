@@ -1,4 +1,11 @@
-const BASE_URL = (import.meta.env?.VITE_API_URL as string) || 'http://localhost:4000';
+const BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:4000';
+import { showSuccess, showError } from './toastService';
+
+export interface FetchOptions extends RequestInit {
+  successMessage?: string;
+  hideSuccessToast?: boolean;
+  hideErrorToast?: boolean;
+}
 
 export const apiUrl = (path: string) => {
   if (!path) return BASE_URL;
@@ -7,7 +14,7 @@ export const apiUrl = (path: string) => {
   return `${BASE_URL}${path}`;
 };
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
+export async function apiFetch(path: string, options: FetchOptions = {}) {
   const url = apiUrl(path);
   const rawHeaders = options.headers || {};
 
@@ -21,24 +28,53 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem('luxeva_token') || sessionStorage.getItem('luxeva_token');
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(url, { ...options, headers });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const message = body?.message || res.statusText || 'Request failed';
-    throw new Error(message);
+  try {
+    const res = await fetch(url, { ...options, headers });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const message = body?.message || res.statusText || 'Request failed';
+
+      if (res.status === 401) {
+        // Auto-logout on invalid/expired token
+        removeToken();
+        localStorage.removeItem('luxeva_user');
+        window.dispatchEvent(new Event('luxeva:user-changed'));
+        if (!window.location.pathname.includes('/login')) {
+          showError('Session expired. Please login again.');
+          window.location.href = '/login';
+        }
+      } else {
+        if (!options.hideErrorToast) showError(message);
+      }
+      throw new Error(message);
+    }
+    const data = await res.json();
+
+    // Show success toast for non-GET requests (mutations)
+    if (!options.hideSuccessToast && options.method && options.method !== 'GET') {
+      const message = options.successMessage || data?.message || 'Operation successful';
+      showSuccess(message);
+    }
+
+    return data;
+  } catch (error: any) {
+    // Only show error if it hasn't been shown
+    if (!options.hideErrorToast && error instanceof TypeError && error.message === 'Failed to fetch') {
+      showError('Network error: Could not connect to server');
+    }
+    throw error;
   }
-  return res.json();
 }
 
 export const setToken = (token: string, remember = true) => {
   try {
     if (remember) localStorage.setItem('luxeva_token', token);
     else sessionStorage.setItem('luxeva_token', token);
-  } catch (e) {}
+  } catch (e) { }
 };
 
 export const removeToken = () => {
-  try { localStorage.removeItem('luxeva_token'); sessionStorage.removeItem('luxeva_token'); } catch (e) {}
+  try { localStorage.removeItem('luxeva_token'); sessionStorage.removeItem('luxeva_token'); } catch (e) { }
 };
 
 export default {

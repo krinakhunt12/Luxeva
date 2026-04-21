@@ -1,12 +1,20 @@
-type ToastFn = (message: string) => void;
+import { toast } from 'sonner';
 
-let _showSuccess: ToastFn = (m) => console.info('Toast not initialized:', m);
-let _showError: ToastFn = (m) => console.error('Toast not initialized:', m);
-
-export const setToastHandlers = (handlers: { showSuccess: ToastFn; showError: ToastFn }) => {
-  _showSuccess = handlers.showSuccess;
-  _showError = handlers.showError;
+export const showSuccess = (message: string) => {
+  toast.success(message, {
+    duration: 3000,
+  });
 };
 
-export const showSuccess = (message: string) => _showSuccess(message);
-export const showError = (message: string) => _showError(message);
+export const showError = (message: string) => {
+  toast.error(message, {
+    duration: 4000,
+  });
+};
+
+export const showInfo = (message: string) => {
+  toast.info(message, {
+    duration: 3000,
+  });
+};
+

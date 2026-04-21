@@ -1,6 +1,2 @@
-export interface User {
-  id?: string;
-  name: string;
-  email: string;
-  mobile?: string;
-}
+export type { User } from '../../../types';
+

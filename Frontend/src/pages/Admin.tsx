@@ -20,6 +20,8 @@ import OfferForm from '../features/admin/OfferForm';
 import OffersList from '../features/admin/OffersList';
 import AbandonedCarts from '../features/admin/AbandonedCarts';
 import LowStock from '../features/admin/LowStock';
+import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '../features/products/hooks/useProducts';
+import { useUsers, useUpdateUser } from '../features/user/hooks/useUser';
 
 // Sub-components for Admin Panel
 const Sidebar = ({ activeTab, setActiveTab, offersOpen, setOffersOpen }: { activeTab: string, setActiveTab: (tab: 'dashboard' | 'products' | 'users' | 'abandoned' | 'lowstock') => void, offersOpen: boolean, setOffersOpen: (v: boolean) => void }) => (
@@ -88,8 +90,15 @@ export const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useShop();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'users' | 'abandoned' | 'lowstock'>('dashboard');
   const [offersOpen, setOffersOpen] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  
+  const { data: products = [], isLoading: prodsLoading } = useProducts();
+  const { data: users = [], isLoading: usersLoading } = useUsers();
+  
+  const createProductMut = useCreateProduct();
+  const updateProductMut = useUpdateProduct();
+  const deleteProductMut = useDeleteProduct();
+  const updateUserMut = useUpdateUser();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
@@ -104,7 +113,7 @@ export const Admin = () => {
     category: 'women',
     description: '',
     stock: 10,
-    isNew: true,
+    isNewArrival: true,
     isSale: false,
     salePrice: 0,
     images: [''],
@@ -114,26 +123,7 @@ export const Admin = () => {
     }
   });
 
-  useEffect(() => {
-    if (!isAdmin) return;
-
-    const unsubscribeProds = onSnapshot(collection(db, 'products'), (snapshot) => {
-      const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-      setProducts(prods);
-    });
-
-    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
-      const u = snapshot.docs.map(doc => ({ ...doc.data() } as User));
-      setUsers(u);
-    });
-
-    return () => {
-      unsubscribeProds();
-      unsubscribeUsers();
-    };
-  }, [isAdmin]);
-
-  if (authLoading) return <div className="pt-40"><Skeleton className="max-w-4xl mx-auto px-6" lines={3} /></div>;
+  if (authLoading || prodsLoading || usersLoading) return <div className="pt-40"><Skeleton className="max-w-4xl mx-auto px-6" lines={3} /></div>;
   if (!isAdmin) return <div className="pt-40 text-center">Access Denied</div>;
 
   const handleOpenModal = (product: Product | null = null) => {
@@ -147,7 +137,7 @@ export const Admin = () => {
         category: product.category,
         description: product.description || '',
         stock: product.stock || 10,
-        isNew: product.isNew || false,
+        isNewArrival: product.isNewArrival || false,
         isSale: product.isSale || false,
         salePrice: product.salePrice || 0,
         images: product.images || [''],
@@ -165,7 +155,7 @@ export const Admin = () => {
         category: 'women',
         description: '',
         stock: 10,
-        isNew: true,
+        isNewArrival: true,
         isSale: false,
         salePrice: 0,
         images: [''],
@@ -191,13 +181,7 @@ export const Admin = () => {
 
   const handleToggleRole = async (targetUser: User) => {
     const newRole = targetUser.role === 'admin' ? 'user' : 'admin';
-    try {
-      await updateDoc(doc(db, 'users', targetUser.uid), {
-        role: newRole
-      });
-    } catch (error) {
-      console.error('Error updating role:', error);
-    }
+    updateUserMut.mutate({ id: targetUser.uid, payload: { role: newRole } });
   };
 
   const addColor = () => {
@@ -252,39 +236,30 @@ export const Admin = () => {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      // Scroll to top of modal or show toast
       return;
     }
 
     setErrors({});
     setLoading(true);
-    try {
-      if (editingProduct) {
-        await updateDoc(doc(db, 'products', editingProduct.id), {
-          ...formData,
-          updatedAt: serverTimestamp()
-        });
-      } else {
-        await addDoc(collection(db, 'products'), {
-          ...formData,
-          createdAt: serverTimestamp()
-        });
+    
+    const mutation = editingProduct ? updateProductMut : createProductMut;
+    const payload = editingProduct ? { id: editingProduct._id || editingProduct.id, payload: formData } : formData;
+
+    mutation.mutate(payload as any, {
+      onSuccess: () => {
+        setIsModalOpen(false);
+        setLoading(false);
+      },
+      onError: (err) => {
+        console.error('Error saving product:', err);
+        setLoading(false);
       }
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error('Error saving product:', error);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
-    try {
-      await deleteDoc(doc(db, 'products', id));
-    } catch (error) {
-      console.error('Error deleting product:', error);
-    }
+    deleteProductMut.mutate(id);
   };
 
   return (
@@ -346,7 +321,7 @@ export const Admin = () => {
                     </thead>
                     <tbody className="divide-y divide-accent">
                       {filteredProducts.map((product) => (
-                        <tr key={product.id} className="hover:bg-accent/10 transition-colors">
+                        <tr key={product._id || product.id} className="hover:bg-accent/10 transition-colors">
                           <td className="p-4">
                             <div className="flex items-center gap-4">
                               <img src={product.images[0]} alt={product.name} className="w-10 h-10 object-cover" />
@@ -365,7 +340,7 @@ export const Admin = () => {
                                 <Edit2 size={16} />
                               </button>
                               <button 
-                                onClick={() => handleDelete(product.id)}
+                                onClick={() => handleDelete(product._id || product.id)}
                                 className="p-2 text-muted hover:text-red-500 transition-colors"
                               >
                                 <Trash2 size={16} />
@@ -414,9 +389,9 @@ export const Admin = () => {
                           <td className="p-4">
                             <div className="flex items-center gap-4">
                               <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-[10px] font-bold">
-                                {u.firstName[0]}{u.lastName[0]}
+                                {(u.firstName?.[0] || '')}{(u.lastName?.[0] || '')}
                               </div>
-                              <span className="text-xs font-medium">{u.firstName} {u.lastName}</span>
+                              <span className="text-xs font-medium">{u.firstName || 'Unknown'} {u.lastName || ''}</span>
                             </div>
                           </td>
                           <td className="p-4 text-xs text-muted">{u.email}</td>
@@ -650,8 +625,8 @@ export const Admin = () => {
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input 
                       type="checkbox" 
-                      checked={formData.isNew}
-                      onChange={(e) => setFormData({...formData, isNew: e.target.checked})}
+                      checked={formData.isNewArrival}
+                      onChange={(e) => setFormData({...formData, isNewArrival: e.target.checked})}
                       className="accent-primary"
                     />
                     <span className="text-[10px] uppercase tracking-widest font-bold">New Arrival</span>

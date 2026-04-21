@@ -9,7 +9,10 @@ export const fetchUsers = async (): Promise<User[]> => {
   return apiFetch('/api/users') as Promise<User[]>;
 };
 
-export const updateUser = async (payload: Partial<User>): Promise<User> => {
-  return apiFetch('/api/users', { method: 'PUT', body: JSON.stringify(payload) }) as Promise<User>;
+export const updateUser = async ({ id, payload }: { id: string; payload: Partial<User> }): Promise<User> => {
+  return apiFetch('/api/users', { 
+    method: 'PUT', 
+    body: JSON.stringify({ id, ...payload }) 
+  }) as Promise<User>;
 };
 

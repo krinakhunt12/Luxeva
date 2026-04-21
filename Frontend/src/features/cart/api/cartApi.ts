@@ -6,9 +6,16 @@ export const fetchCart = async (): Promise<CartItem[]> => {
 };
 
 export const addToCart = async (item: CartItem): Promise<CartItem> => {
-  return apiFetch('/api/cart', { method: 'POST', body: JSON.stringify(item) }) as Promise<CartItem>;
+  return apiFetch('/api/cart', { 
+    method: 'POST', 
+    body: JSON.stringify(item),
+    successMessage: 'Added to cart'
+  }) as Promise<CartItem>;
 };
 
 export const removeFromCart = async (id: string): Promise<void> => {
-  return apiFetch(`/api/cart/${id}`, { method: 'DELETE' }) as Promise<void>;
+  return apiFetch(`/api/cart/${id}`, { 
+    method: 'DELETE',
+    successMessage: 'Removed from cart'
+  }) as Promise<void>;
 };

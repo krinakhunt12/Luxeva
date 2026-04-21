@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { useCreateOrder } from '../features/orders/hooks/useOrders';
+import { showSuccess, showError } from '../utils/toastService';
+import { getPriceDetails } from '../utils/productUtils';
 
 const Checkout: React.FC = () => {
   const { cart, cartTotal, clearCart } = useShop();
@@ -33,15 +35,16 @@ const Checkout: React.FC = () => {
       if (res && res.valid) {
         setDiscount(res.discount || 0);
         setAppliedOffer(res.offer || null);
+        showSuccess('Coupon applied successfully');
       } else {
         setDiscount(0);
         setAppliedOffer(null);
-        alert(res?.message || 'Coupon invalid');
+        showError(res?.message || 'Coupon invalid');
       }
     } catch (err: any) {
       setDiscount(0);
       setAppliedOffer(null);
-      alert(err?.message || 'Coupon validation failed');
+      showError(err?.message || 'Coupon validation failed');
     } finally {
       setCouponLoading(false);
     }
@@ -57,19 +60,32 @@ const Checkout: React.FC = () => {
       if (res && res.ok) {
         setGiftDeducted(res.deducted || 0);
         setAppliedGiftCard({ code: giftCode.trim().toUpperCase(), deducted: res.deducted || 0 });
+        showSuccess('Gift card balance applied');
       } else {
-        alert(res?.message || 'Gift card invalid');
+        showError(res?.message || 'Gift card invalid');
         setGiftDeducted(0);
         setAppliedGiftCard(null);
       }
     } catch (err: any) {
-      alert(err?.message || 'Redeem failed');
+      showError(err?.message || 'Redeem failed');
       setGiftDeducted(0);
       setAppliedGiftCard(null);
     } finally {
       setGiftLoading(false);
     }
   };
+
+  // calculate full breakdown
+  const { offers: allOffers } = useShop();
+  const originalSubtotal = cart.reduce((sum, item) => sum + (item.originalPrice || item.price) * item.quantity, 0);
+  const totalProductDiscount = originalSubtotal - cartTotal;
+  
+  // Dynamic Bank Offer Calculation
+  const bankOffers = allOffers.filter((o: any) => o.bank && o.status === 'active');
+  const matchedBankOffer = paymentBank ? bankOffers.find((o: any) => String(o.bank).toLowerCase() === paymentBank.toLowerCase()) : null;
+  const bankDiscount = matchedBankOffer ? Math.round((cartTotal - discount) * ((matchedBankOffer.percentage || matchedBankOffer.amount || 0) / 100)) : 0;
+
+  const finalTotal = Math.max(0, cartTotal - discount - bankDiscount - giftDeducted);
 
   // auto-apply coupon if set from promo banner
   React.useEffect(() => {
@@ -84,6 +100,7 @@ const Checkout: React.FC = () => {
           if (res && res.valid) {
             setDiscount(res.discount || 0);
             setAppliedOffer(res.offer || null);
+            showSuccess(`Coupon ${pending} applied`);
           }
         } catch (e) {}
         try { localStorage.removeItem('luxeva_pending_coupon'); } catch (e) {}
@@ -101,17 +118,24 @@ const Checkout: React.FC = () => {
             <h2 className="text-sm uppercase tracking-[0.2em] font-bold">Shipping Address</h2>
             <p className="text-xs text-muted">You currently have {cart.length} item(s) in your cart.</p>
 
-            <form className="space-y-6" onSubmit={(e) => {
-              e.preventDefault();
-              // build payload
-              const payload = {
-                items: cart.map(item => ({ productId: item.id, name: item.name, price: item.price, quantity: item.quantity })),
-                shippingAddress: { fullName, email, address1, city, postal },
-                total: Math.max(0, cartTotal - discount - giftDeducted),
-                saveAddress: false,
-                appliedOffer: appliedOffer ? { id: appliedOffer._id || appliedOffer.id, code: appliedOffer.code, title: appliedOffer.title, discount: discount } : null,
-                appliedGiftCard: appliedGiftCard ? { code: appliedGiftCard.code, deducted: appliedGiftCard.deducted || giftDeducted } : null
-              };
+              <form className="space-y-6" onSubmit={(e) => {
+                e.preventDefault();
+                // build payload
+                const payload = {
+                  items: cart.map(item => ({ productId: item.id, name: item.name, price: item.price, quantity: item.quantity })),
+                  shippingAddress: { fullName, email, address1, city, postal },
+                  total: finalTotal,
+                  saveAddress: false,
+                  appliedOffer: appliedOffer || bankDiscount > 0 ? { 
+                    id: appliedOffer?._id || appliedOffer?.id || 'bank-offer', 
+                    code: appliedOffer?.code || `BANK_${paymentBank.toUpperCase()}`, 
+                    title: appliedOffer?.title || `${paymentBank.toUpperCase()} Bank Discount`, 
+                    discount: discount + bankDiscount 
+                  } : null,
+                  appliedGiftCard: appliedGiftCard ? { code: appliedGiftCard.code, deducted: appliedGiftCard.deducted || giftDeducted } : null,
+                  paymentMethod: paymentMethod,
+                  paymentBank: paymentBank
+                };
 
               createOrder.mutate(payload, {
                 onSuccess: (data) => {
@@ -149,17 +173,35 @@ const Checkout: React.FC = () => {
               </div>
 
               <div className="mt-4">
-                <label className="text-xs uppercase text-muted">Payment Method</label>
-                <div className="flex gap-2 mt-2">
-                  <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="border p-2">
-                    <option value="card">Card</option>
+                <label className="text-[10px] uppercase tracking-widest text-muted font-bold">Payment Method & Bank Offers</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="border border-accent p-3 text-xs uppercase tracking-widest font-bold">
+                    <option value="card">Debit/Credit Card</option>
                     <option value="netbanking">Netbanking</option>
-                    <option value="upi">UPI</option>
-                    <option value="emi">EMI</option>
-                    <option value="wallet">Wallet</option>
+                    <option value="upi">UPI / Scanner</option>
+                    <option value="wallet">Digital Wallet</option>
                   </select>
-                  <input value={paymentBank} onChange={(e) => setPaymentBank(e.target.value)} placeholder="Bank (optional)" className="border p-2 flex-1" />
+                  <input value={paymentBank} onChange={(e) => setPaymentBank(e.target.value)} placeholder="Enter Bank Name (e.g. HDFC)" className="border border-accent p-3 text-xs uppercase tracking-widest font-bold" />
                 </div>
+                {bankOffers.length > 0 && (
+                  <div className="mt-4 p-4 bg-accent/30 border border-accent">
+                    <p className="text-[10px] uppercase tracking-[0.1em] font-bold mb-3 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-gold rounded-full" /> Applicable Bank Offers
+                    </p>
+                    <div className="space-y-2">
+                      {bankOffers.map((o: any) => (
+                        <div key={o._id} className="flex justify-between items-center text-[10px] uppercase tracking-wide">
+                          <span className="text-muted font-bold">{o.bank} Offer: {o.percentage || o.amount}% Instant Discount</span>
+                          {String(paymentBank).toLowerCase() === String(o.bank).toLowerCase() ? (
+                            <span className="text-green-600 font-bold">Applied</span>
+                          ) : (
+                            <span className="text-gold">Enter {o.bank} to apply</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4">
@@ -197,11 +239,39 @@ const Checkout: React.FC = () => {
               ))}
             </div>
 
-            <div className="pt-6 border-t border-accent mt-6 space-y-2">
-              <div className="flex justify-between text-sm"><span>Subtotal</span><span>₹{cartTotal}</span></div>
-              <div className="flex justify-between text-sm"><span>Discount</span><span>- ₹{discount}</span></div>
-              <div className="flex justify-between text-sm"><span>Gift</span><span>- ₹{giftDeducted}</span></div>
-              <div className="flex justify-between font-bold"><span>Total</span><span>₹{Math.max(0, cartTotal - discount - giftDeducted)}</span></div>
+            <div className="pt-6 border-t border-accent mt-6 space-y-3">
+              <div className="flex justify-between text-xs uppercase tracking-widest">
+                <span className="text-muted">Original Price</span>
+                <span>₹{originalSubtotal.toLocaleString()}</span>
+              </div>
+              {totalProductDiscount > 0 && (
+                <div className="flex justify-between text-xs uppercase tracking-widest text-gold font-bold">
+                  <span>Product Discount</span>
+                  <span>- ₹{totalProductDiscount.toLocaleString()}</span>
+                </div>
+              )}
+              {discount > 0 && (
+                <div className="flex justify-between text-xs uppercase tracking-widest text-green-600 font-bold">
+                  <span>Coupon ({appliedOffer?.code})</span>
+                  <span>- ₹{discount.toLocaleString()}</span>
+                </div>
+              )}
+              {bankDiscount > 0 && (
+                <div className="flex justify-between text-xs uppercase tracking-widest text-blue-600 font-bold">
+                  <span>Bank Offer ({paymentBank.toUpperCase()})</span>
+                  <span>- ₹{bankDiscount.toLocaleString()}</span>
+                </div>
+              )}
+              {giftDeducted > 0 && (
+                <div className="flex justify-between text-xs uppercase tracking-widest text-muted">
+                  <span>Gift Card</span>
+                  <span>- ₹{giftDeducted.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="pt-4 border-t border-accent flex justify-between text-sm uppercase tracking-[0.2em] font-bold">
+                <span>Final Total</span>
+                <span>₹{finalTotal.toLocaleString()}</span>
+              </div>
             </div>
           </aside>
         </div>

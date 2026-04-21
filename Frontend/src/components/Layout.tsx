@@ -21,7 +21,7 @@ const AnnouncementBar = () => {
     if (soon) {
       const msLeft = new Date(soon.endsAt).getTime() - now;
       const hours = Math.ceil(msLeft / (1000 * 60 * 60));
-      setBannerText(`${soon.title} — ends in ${hours} hour${hours > 1 ? 's' : ''}! ${soon.discountType === 'percentage' ? soon.amount + '% off' : 'Flat ₹' + soon.amount + ' off'}`);
+      setBannerText(`${soon.title} — ends in ${hours} hour${hours > 1 ? 's' : ''}! ${soon.percentage}% OFF`);
     }
   }, [offers]);
 

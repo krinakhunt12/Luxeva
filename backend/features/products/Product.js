@@ -28,7 +28,7 @@ const ProductSchema = new mongoose.Schema({
     colors: [String],
     sizes: [String],
     isSale: Boolean,
-    isNew: Boolean,
+    isNewArrival: Boolean,
     inStock: Boolean,
     stock: Number,
     createdAt: { type: Date, default: Date.now }

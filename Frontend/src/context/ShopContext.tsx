@@ -232,32 +232,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isInWishlist = (id: string) => wishlist.some(item => item.id === id);
 
-  const getBestDiscountForItem = (item: CartItem) => {
-    if (!offers || offers.length === 0) return 0;
-    const now = Date.now();
-    const applicable = offers.filter((o: any) => {
-      if (!o.active) return false;
-      if (o.startsAt && new Date(o.startsAt).getTime() > now) return false;
-      if (o.endsAt && new Date(o.endsAt).getTime() < now) return false;
-      if (o.appliesTo === 'all') return true;
-      if (o.appliesTo === 'product' && o.productId) return String(o.productId) === String(item.id);
-      return false;
-    });
-
-    let maxSaving = 0;
-    applicable.forEach((o: any) => {
-      let saving = 0;
-      if (o.discountType === 'percentage') saving = item.price * (Number(o.amount) / 100);
-      else saving = Number(o.amount || 0);
-      if (saving > maxSaving) maxSaving = saving;
-    });
-    return Math.min(maxSaving, item.price); // never exceed item price
-  };
-
   const cartTotal = cart.reduce((total, item) => {
-    const discount = getBestDiscountForItem(item);
-    const priceAfter = Math.max(0, item.price - discount);
-    return total + priceAfter * item.quantity;
+    return total + (item.price || 0) * item.quantity;
   }, 0);
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
 

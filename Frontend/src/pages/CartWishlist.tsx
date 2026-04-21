@@ -5,6 +5,8 @@ import { useShop } from '../context/ShopContext';
 import { motion } from 'motion/react';
 import { ProductCard } from '../components/ProductCard';
 import { useState } from 'react';
+import { getPriceDetails } from '../utils/productUtils';
+import { showSuccess, showError } from '../utils/toastService';
 
 export const Cart = () => {
   const { cart, removeFromCart, updateCartQuantity, cartTotal } = useShop();
@@ -49,7 +51,12 @@ export const Cart = () => {
                         <h3 className="text-sm uppercase tracking-[0.2em] font-bold">{item.name}</h3>
                         <p className="text-[10px] text-muted mt-2 uppercase tracking-widest">{item.category} / {item.subCategory}</p>
                       </div>
-                      <span className="text-sm font-medium">₹{item.price}</span>
+                      <div className="text-right">
+                        <div className="text-sm font-bold">{getPriceDetails(item).formattedCurrent}</div>
+                        {getPriceDetails(item).hasDiscount && (
+                          <div className="text-[10px] text-muted line-through mt-0.5">{getPriceDetails(item).formattedOriginal}</div>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="flex gap-8 text-[10px] uppercase tracking-widest font-bold">
@@ -160,8 +167,10 @@ export const Wishlist = () => {
       const data = await res.json();
       const full = `${window.location.origin}${data.url}`;
       setShareUrl(full);
+      showSuccess('Share link generated');
     } catch (err: any) {
       setShareError(err.message || 'Error');
+      showError(err.message || 'Sharing failed');
     } finally {
       setSharing(false);
     }

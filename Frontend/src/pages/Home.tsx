@@ -102,7 +102,7 @@ const CategoryPills = () => {
 const NewArrivals = () => {
   const { data: products = [], isLoading: loading } = useProducts();
 
-  const newProducts = (products || []).filter((p: any) => p.isNew || p.isSale).slice(0, 4);
+  const newProducts = (products || []).filter((p: any) => p.isNewArrival || p.isSale).slice(0, 4);
 
   if (loading) return <div className="py-20"><div className="container mx-auto px-6"><Skeleton count={4} lines={2} /></div></div>;
 

@@ -16,7 +16,7 @@ export interface Product {
     colors: { name: string; hex: string }[];
     sizes: string[];
   };
-  isNew?: boolean;
+  isNewArrival?: boolean;
   isSale?: boolean;
   inStock?: boolean;
   stock?: number;
@@ -25,9 +25,13 @@ export interface Product {
 
 export interface User {
   uid: string;
+  id?: string;
   email: string;
+  name?: string;
   firstName: string;
   lastName: string;
+  displayName?: string;
+  mobile?: string;
   role?: 'admin' | 'user';
   createdAt: any;
 }

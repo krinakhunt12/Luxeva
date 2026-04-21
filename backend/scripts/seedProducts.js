@@ -74,7 +74,7 @@ women.forEach((name, i) => {
         stockByVariant: { Cream: { XS: 5, S: 10, M: 7, L: 3 }, Black: { XS: 4, S: 8, M: 6, L: 2 } },
         description: `${name} — elevated essentials with a refined finish.`,
         variants: buildVariants('women'),
-        isNew: i < 4,
+        isNewArrival: i < 4,
         inStock: true,
         stock: 10 + i
     });

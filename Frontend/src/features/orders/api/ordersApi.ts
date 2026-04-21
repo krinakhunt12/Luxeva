@@ -6,9 +6,17 @@ export const fetchOrders = async (): Promise<Order[]> => {
 };
 
 export const createOrder = async (payload: Partial<Order>): Promise<Order> => {
-  return apiFetch('/api/orders', { method: 'POST', body: JSON.stringify(payload) }) as Promise<Order>;
+  return apiFetch('/api/orders', { 
+    method: 'POST', 
+    body: JSON.stringify(payload),
+    successMessage: 'Order placed successfully'
+  }) as Promise<Order>;
 };
 
 export const updateOrderStatus = async (id: string, status: string): Promise<Order> => {
-  return apiFetch(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }) as Promise<Order>;
+  return apiFetch(`/api/orders/${id}/status`, { 
+    method: 'PATCH', 
+    body: JSON.stringify({ status }),
+    successMessage: `Order status updated to ${status}`
+  }) as Promise<Order>;
 };

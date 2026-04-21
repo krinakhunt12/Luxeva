@@ -28,3 +28,41 @@ export function deriveImagesByColor(product: any) {
   });
   return map;
 }
+
+/**
+ * Returns a user-friendly label for an offer (e.g., "10% OFF", "Save ₹500")
+ */
+export function getOfferLabel(product: any) {
+  const offer = product.appliedOffer;
+  if (!offer) {
+    if (product.originalPrice && product.price < product.originalPrice) {
+      const diff = product.originalPrice - product.price;
+      const pct = Math.round((diff / product.originalPrice) * 100);
+      return `${pct}% OFF`;
+    }
+    return null;
+  }
+
+  // Simplified to only percentage
+  const pct = offer.percentage || offer.amount || 0;
+  return `${pct}% OFF`;
+}
+
+/**
+ * Returns formatted prices and discount percentage
+ */
+export function getPriceDetails(product: any) {
+  const currentPrice = Number(product.price);
+  const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
+  const hasDiscount = originalPrice && originalPrice > currentPrice;
+  const discountPercent = hasDiscount ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
+
+  return {
+    currentPrice,
+    originalPrice,
+    hasDiscount,
+    discountPercent,
+    formattedCurrent: `₹${currentPrice.toLocaleString()}`,
+    formattedOriginal: originalPrice ? `₹${originalPrice.toLocaleString()}` : null
+  };
+}

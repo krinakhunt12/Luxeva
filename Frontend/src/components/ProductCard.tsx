@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getOfferLabel, getPriceDetails } from '../utils/productUtils';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -107,11 +108,16 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
 
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
-          {product.isNew && (
-            <span className="bg-white text-primary text-[8px] uppercase tracking-widest font-bold px-2 py-1">New</span>
+          {product.isNewArrival && (
+            <span className="bg-white text-primary text-[8px] uppercase tracking-widest font-bold px-2 py-1 shadow-sm">New</span>
           )}
-          {product.isSale && (
-            <span className="bg-gold text-white text-[8px] uppercase tracking-widest font-bold px-2 py-1">Sale</span>
+          {getOfferLabel(product) && (
+            <span className="bg-gold text-white text-[8px] uppercase tracking-widest font-bold px-2 py-1 shadow-sm">
+              {getOfferLabel(product)}
+            </span>
+          )}
+          {product.isSale && !getOfferLabel(product) && (
+            <span className="bg-gold text-white text-[8px] uppercase tracking-widest font-bold px-2 py-1 shadow-sm">Sale</span>
           )}
         </div>
 
@@ -178,12 +184,14 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         >
           {(product as any).description || ''}
         </p>
-        <div className="flex gap-2 items-center">
-          <span className={cn("text-lg font-semibold", product.originalPrice && "text-gold")}>
-            ₹{product.price}
+        <div className="flex gap-2 items-center flex-wrap">
+          <span className={cn("text-lg font-semibold", getPriceDetails(product).hasDiscount && "text-gold")}>
+            {getPriceDetails(product).formattedCurrent}
           </span>
-          {product.originalPrice && (
-            <span className="text-sm text-muted line-through">₹{product.originalPrice}</span>
+          {getPriceDetails(product).hasDiscount && (
+            <span className="text-sm text-muted line-through">
+              {getPriceDetails(product).formattedOriginal}
+            </span>
           )}
         </div>
 
@@ -217,7 +225,12 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
               </div>
               <div>
                 <p className="text-sm text-muted mb-4">{product.subCategory}</p>
-                <p className="text-2xl font-semibold mb-4">₹{product.price}</p>
+                <div className="flex gap-3 items-center mb-4">
+                  <p className="text-2xl font-semibold">{getPriceDetails(product).formattedCurrent}</p>
+                  {getPriceDetails(product).hasDiscount && (
+                    <p className="text-lg text-muted line-through">{getPriceDetails(product).formattedOriginal}</p>
+                  )}
+                </div>
                 <p className="text-sm text-muted mb-6">{(product as any).description || 'No description available.'}</p>
                 <div className="flex gap-2">
                   <button onClick={handleAddToCart} disabled={!available} className="bg-primary text-white px-4 py-2 rounded">

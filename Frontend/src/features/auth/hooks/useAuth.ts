@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import * as api from '../api/authApi';
 import { LoginPayload, SignUpPayload } from '../types';
-import { showSuccess, showError } from '../../../utils/toastService';
 import { setToken } from '../../../utils/apiClient';
 
 type LoginWithRemember = LoginPayload & { remember?: boolean };
@@ -16,9 +15,7 @@ export const useLogin = () => {
         else localStorage.setItem('luxeva_user', JSON.stringify(data.user));
       } catch (e) {}
       window.dispatchEvent(new Event('luxeva:user-changed'));
-      showSuccess('Logged in');
-    },
-    onError: (err: any) => showError(err?.message || 'Login failed'),
+    }
   });
 };
 
@@ -32,8 +29,6 @@ export const useSignUp = () => {
         else localStorage.setItem('luxeva_user', JSON.stringify(data.user));
       } catch (e) {}
       window.dispatchEvent(new Event('luxeva:user-changed'));
-      showSuccess('Account created');
-    },
-    onError: (err: any) => showError(err?.message || 'Signup failed'),
+    }
   });
 };

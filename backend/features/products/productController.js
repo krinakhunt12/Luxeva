@@ -1,83 +1,112 @@
 const Product = require('./Product');
 
-const getProducts = async(req, res) => {
-    try {
-        const { search, page, limit, category } = req.query;
-        const q = {};
-        if (search) q.$or = [{ name: new RegExp(search, 'i') }, { slug: new RegExp(search, 'i') }, { description: new RegExp(search, 'i') }];
-        if (category) q.category = new RegExp(`^${String(category)}`, 'i');
+const Offer = require('../offers/Offer');
 
-        // If page and limit are provided, return paginated response
-        const pageNum = page ? parseInt(page, 10) : null;
-        const limitNum = limit ? parseInt(limit, 10) : null;
+/**
+ * Internal helper to apply active offers to a list of products.
+ * Standardizes calculation for percentage and fixed discount types.
+ */
+async function applyOffersToProducts(products) {
+  if (!products || !Array.isArray(products) || products.length === 0) return products;
 
-        if (pageNum && limitNum) {
-            const skip = (pageNum - 1) * limitNum;
-            const [items, total] = await Promise.all([
-                Product.find(q).skip(skip).limit(limitNum).lean(),
-                Product.countDocuments(q),
-            ]);
-            const pages = Math.max(1, Math.ceil(total / limitNum));
-            return res.json({ products: items, total, page: pageNum, pages });
+  try {
+    const now = new Date();
+    // Fetch all potentially active offers
+    const offers = await Offer.find({ status: 'active' }).lean();
+
+    // Filter by dates if set
+    const activeOffers = offers.filter((o) => {
+      if (o.startsAt && new Date(o.startsAt) > now) return false;
+      if (o.endsAt && new Date(o.endsAt) < now) return false;
+      // coupons and bank offers are usually applied at checkout, not on listing
+      if (o.code || o.bank) return false; 
+      return true;
+    });
+
+    if (activeOffers.length === 0) return products;
+
+    return products.map((p) => {
+      const applicable = activeOffers.filter((o) => {
+        if (o.appliesTo === 'all') return true;
+        if (o.productId && String(o.productId) === String(p._id)) return true;
+        if (Array.isArray(o.productIds) && o.productIds.find((id) => String(id) === String(p._id))) return true;
+        return false;
+      });
+
+      if (!applicable || applicable.length === 0) return p;
+
+      let best = null;
+      let bestSaving = 0;
+
+      for (const o of applicable) {
+        const pct = Number(o.percentage || 0);
+        const saving = (p.price || 0) * (pct / 100);
+
+        if (saving > bestSaving) {
+          bestSaving = saving;
+          best = o;
         }
+      }
 
-        // Default: return all products (backwards compatible)
-        let products = await Product.find(q).lean();
+      if (!best) return p;
 
-        // Attach active offers (simple application logic)
-        try {
-            const Offer = require('../offers/Offer');
-            const now = new Date();
-            const offers = await Offer.find({ active: true }).lean();
+      const copy = { ...p };
+      copy.originalPrice = copy.price;
+      
+      const discountPct = Number(best.percentage || 0);
+      copy.price = Math.max(0, Math.round(copy.price * (1 - discountPct / 100)));
 
-            const activeOffers = offers.filter((o) => {
-                if (o.status && o.status !== 'active') return false;
-                if (o.startsAt && new Date(o.startsAt) > now) return false;
-                if (o.endsAt && new Date(o.endsAt) < now) return false;
-                return true;
-            });
+      copy.appliedOffer = {
+        id: best._id,
+        title: best.title,
+        discountType: 'percentage',
+        amount: best.percentage, // for frontend compatibility if needed
+        percentage: best.percentage,
+        bannerImage: best.bannerImage
+      };
+      return copy;
+    });
+  } catch (e) {
+    console.warn('Offer application failed:', e.message);
+    return products;
+  }
+}
 
-            products = products.map((p) => {
-                const applicable = activeOffers.filter((o) => {
-                    if (o.appliesTo === 'all') return true;
-                    if (o.productId && String(o.productId) === String(p._id)) return true;
-                    if (Array.isArray(o.productIds) && o.productIds.find((id) => String(id) === String(p._id))) return true;
-                    return false;
-                });
-                if (!applicable || applicable.length === 0) return p;
+const getProducts = async (req, res) => {
+  try {
+    const { search, page, limit, category } = req.query;
+    const q = {};
+    if (search) q.$or = [{ name: new RegExp(search, 'i') }, { slug: new RegExp(search, 'i') }, { description: new RegExp(search, 'i') }];
+    if (category) q.category = new RegExp(`^${String(category)}`, 'i');
 
-                let best = null;
-                let bestSaving = 0;
-                for (const o of applicable) {
-                    const amt = Number(o.amount || 0);
-                    let saving = 0;
-                    if (o.discountType === 'fixed') saving = amt;
-                    else saving = (p.price || 0) * (amt / 100);
-                    if (saving > bestSaving) {
-                        bestSaving = saving;
-                        best = o;
-                    }
-                }
+    const pageNum = page ? parseInt(page, 10) : null;
+    const limitNum = limit ? parseInt(limit, 10) : null;
 
-                if (!best) return p;
-                const copy = {...p };
-                copy.originalPrice = copy.price;
-                if (best.discountType === 'fixed') {
-                    copy.price = Math.max(0, copy.price - Number(best.amount || 0));
-                } else {
-                    copy.price = Math.max(0, Math.round(copy.price * (1 - Number(best.amount || 0) / 100)));
-                }
-                copy.appliedOffer = { id: best._id, title: best.title, discountType: best.discountType, amount: best.amount, bannerImage: best.bannerImage };
-                return copy;
-            });
-        } catch (e) {
-            console.warn('offers not applied:', e.message || e);
-        }
+    let items = [];
+    let total = 0;
+    let pages = 1;
 
-        return res.json(products);
-    } catch (err) {
-        return res.status(500).json({ message: err.message });
+    if (pageNum && limitNum) {
+      const skip = (pageNum - 1) * limitNum;
+      [items, total] = await Promise.all([
+        Product.find(q).skip(skip).limit(limitNum).lean(),
+        Product.countDocuments(q),
+      ]);
+      pages = Math.max(1, Math.ceil(total / limitNum));
+    } else {
+      items = await Product.find(q).lean();
     }
+
+    // Apply active offers
+    const productsWithOffers = await applyOffersToProducts(items);
+
+    if (pageNum && limitNum) {
+      return res.json({ products: productsWithOffers, total, page: pageNum, pages });
+    }
+    return res.json(productsWithOffers);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
 };
 
 const searchProducts = async(req, res) => {
@@ -107,13 +136,16 @@ const searchProducts = async(req, res) => {
         ];
 
         const out = await Product.aggregate(agg);
-        const results = (out[0] && out[0].results) || [];
+        let results = (out[0] && out[0].results) || [];
         const total = (out[0] && out[0].counts && out[0].counts[0] && out[0].counts[0].total) || 0;
         const facetRaw = (out[0] && out[0].facets && out[0].facets[0]) || {};
 
         const sizes = Array.isArray(facetRaw.sizes) ? [].concat(...facetRaw.sizes).filter(Boolean) : [];
         const colors = Array.isArray(facetRaw.colors) ? [].concat(...facetRaw.colors).filter(Boolean) : [];
         const categories = Array.isArray(facetRaw.categories) ? [].concat(...facetRaw.categories).filter(Boolean) : [];
+
+        // Apply active offers to search results
+        results = await applyOffersToProducts(results);
 
         return res.json({ results, total, page: pageNum, per, facets: { sizes, colors, categories } });
     } catch (err) {
@@ -185,7 +217,8 @@ const getProductById = async(req, res) => {
     try {
         const product = await Product.findById(req.params.id).lean();
         if (!product) return res.status(404).json({ message: 'Product not found' });
-        return res.json(product);
+        const [withOffers] = await applyOffersToProducts([product]);
+        return res.json(withOffers);
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }
@@ -195,7 +228,8 @@ const getProductBySlug = async(req, res) => {
     try {
         const product = await Product.findOne({ slug: req.params.slug }).lean();
         if (!product) return res.status(404).json({ message: 'Product not found' });
-        return res.json(product);
+        const [withOffers] = await applyOffersToProducts([product]);
+        return res.json(withOffers);
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }

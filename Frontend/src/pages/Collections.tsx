@@ -51,7 +51,7 @@ const Collections = () => {
     switch (sortBy) {
       case 'price-low': result = [...result].sort((a, b) => a.price - b.price); break;
       case 'price-high': result = [...result].sort((a, b) => b.price - a.price); break;
-      case 'newest': result = [...result].sort((a, b) => (a.isNew ? -1 : 1)); break;
+      case 'newest': result = [...result].sort((a, b) => (a.isNewArrival ? -1 : 1)); break;
       default: break;
     }
 

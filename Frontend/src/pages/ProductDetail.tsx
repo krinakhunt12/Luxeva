@@ -12,6 +12,8 @@ import Skeleton from '../components/ui/Skeleton';
 import { deriveImagesByColor } from '../utils/productUtils';
 import { fetchRecommendations } from '../features/products/api/recommendationsApi';
 import { useQuery } from '@tanstack/react-query';
+import { getOfferLabel, getPriceDetails } from '../utils/productUtils';
+import { showSuccess, showError } from '../utils/toastService';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -19,7 +21,7 @@ function cn(...inputs: ClassValue[]) {
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { addToCart, toggleWishlist, isInWishlist } = useShop();
+  const { addToCart, toggleWishlist, isInWishlist, offers } = useShop();
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -192,8 +194,6 @@ const ProductDetail = () => {
 
   const availableStock = product?.stockByVariant?.[selectedColor]?.[selectedSize] ?? product?.stock ?? 0;
 
-  const discountPercent = product?.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : (product?.salePrice ? Math.round(((product.price - product.salePrice) / product.price) * 100) : 0);
-
   const relatedProducts = (products || [])
     .filter((p: any) => p.category === product.category && (p.id || p._id) !== (product.id || product._id))
     .slice(0, 4);
@@ -293,8 +293,13 @@ const ProductDetail = () => {
                 ))}
               </div>
 
-              {product.isSale && (
-                <span className="absolute top-6 left-6 bg-gold text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 z-10">Sale</span>
+              {getOfferLabel(product) && (
+                <span className="absolute top-6 left-6 bg-gold text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 z-10 shadow-sm">
+                  {getOfferLabel(product)}
+                </span>
+              )}
+              {product.isSale && !getOfferLabel(product) && (
+                <span className="absolute top-6 left-6 bg-gold text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 z-10 shadow-sm">Sale</span>
               )}
             </div>
           </div>
@@ -316,18 +321,40 @@ const ProductDetail = () => {
               </div>
               <div className="flex items-center gap-4">
                 <div>
-                  <div className="text-2xl font-light tracking-tight">₹{product.price}</div>
-                  {product.originalPrice && (
-                    <div className="text-lg text-muted line-through font-light">MRP ₹{product.originalPrice} • {discountPercent}% off</div>
-                  )}
-                  {product.salePrice && (
-                    <div className="text-sm text-muted">Sale Price: ₹{product.salePrice}</div>
+                  <div className="text-3xl font-light tracking-tight text-primary">
+                    {getPriceDetails(product).formattedCurrent}
+                  </div>
+                  {getPriceDetails(product).hasDiscount && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-lg text-muted line-through font-light">
+                        MRP {getPriceDetails(product).formattedOriginal}
+                      </span>
+                      <span className="text-sm text-gold font-semibold">
+                        ({getPriceDetails(product).discountPercent}% OFF)
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
               <p className="text-muted text-sm leading-relaxed italic font-serif max-w-md">
                 {(product.description || '').split('.')[0]}{product.description ? '.' : ''}
               </p>
+
+              {/* Bank Offers */}
+              {offers.filter((o: any) => o.bank && o.status === 'active').length > 0 && (
+                <div className="space-y-3 bg-white border border-accent p-4">
+                  <p className="text-[10px] uppercase tracking-widest font-bold flex items-center gap-2">
+                    <Check size={12} className="text-green-600" /> Bank Offers
+                  </p>
+                  <div className="space-y-2">
+                    {offers.filter((o: any) => o.bank && o.status === 'active').slice(0, 2).map((o: any) => (
+                      <div key={o._id} className="text-[10px] uppercase tracking-wide text-muted">
+                        <span className="font-bold text-primary">{o.bank} Offer:</span> {o.percentage || o.amount}% Instant Discount
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Variants */}
@@ -424,15 +451,16 @@ const ProductDetail = () => {
                   const res = await fetch('/api/orders/buy-now', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ productId: product._id || product.id, quantity, selectedColor, selectedSize }) });
                   if (!res.ok) {
                     const body = await res.json().catch(() => ({}));
-                    alert(body?.message || 'Buy now failed');
+                    showError(body?.message || 'Buy now failed');
                     return;
                   }
                   const data = await res.json();
+                  showSuccess('Order placed via One-Click');
                   // navigate to orders or order confirmation
                   window.location.href = '/orders';
                 } catch (err) {
                   console.error(err);
-                  alert('Buy now failed');
+                  showError('Buy now failed');
                 }
               }} className="w-full border border-primary py-5 text-[10px] uppercase tracking-[0.3em] font-bold hover:bg-primary hover:text-white transition-all duration-500">
                 Buy It Now
@@ -581,7 +609,7 @@ const ProductDetail = () => {
               onClick={handleAddToCart}
               className="w-full bg-primary text-white py-4 text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-3"
             >
-              <ShoppingBag size={14} /> Add to Bag — ₹{product.price}
+              <ShoppingBag size={14} /> Add to Bag — {getPriceDetails(product).formattedCurrent}
             </button>
           </motion.div>
         )}

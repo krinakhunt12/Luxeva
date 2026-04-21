@@ -10,7 +10,14 @@ export const useOrders = () => {
 
 export const useCreateOrder = () => {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: (payload: Partial<Order>) => api.createOrder(payload), onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['orders'] }); showSuccess('Order placed'); }, onError: (err: any) => showError(err?.message || 'Create order failed') });
+  return useMutation({ 
+    mutationFn: (payload: Partial<Order>) => api.createOrder(payload), 
+    onSuccess: (data) => { 
+      qc.invalidateQueries({ queryKey: ['orders'] }); 
+      // Individual success toast is also handled by apiFetch if successMessage is provided
+      // But we can keep it here for specific logic if needed.
+    }
+  });
 };
 
 export const useUpdateOrderStatus = () => {

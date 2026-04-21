@@ -43,7 +43,7 @@ export const products: Product[] = [
       ],
       sizes: ['S', 'M', 'L'],
     },
-    isNew: true,
+    isNewArrival: true,
     inStock: true,
   },
   {

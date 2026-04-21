@@ -4,12 +4,7 @@ const createOffer = async(req, res) => {
     try {
         if (!req.user || req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
         const payload = req.body || {};
-        if (!payload.title || !payload.amount) return res.status(400).json({ message: 'Missing title or amount' });
-        // normalize appliesTo/productIds for backward compatibility
-        if (payload.appliesTo === 'product' && payload.productId) {
-            payload.appliesTo = 'selected';
-            payload.productIds = [payload.productId];
-        }
+        if (!payload.title || !payload.percentage) return res.status(400).json({ message: 'Missing title or percentage' });
         // normalize coupon code
         if (payload.code) payload.code = String(payload.code).toUpperCase();
         const offer = new Offer(payload);
@@ -46,11 +41,6 @@ const updateOffer = async(req, res) => {
         if (!req.user || req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
         const { id } = req.params;
         const payload = req.body || {};
-        // normalize productId -> productIds if needed
-        if (payload.appliesTo === 'product' && payload.productId) {
-            payload.appliesTo = 'selected';
-            payload.productIds = [payload.productId];
-        }
         if (payload.code) payload.code = String(payload.code).toUpperCase();
         const updated = await Offer.findByIdAndUpdate(id, payload, { new: true, runValidators: true }).lean();
         if (!updated) return res.status(404).json({ message: 'Offer not found' });
@@ -108,34 +98,13 @@ const validateOffer = async(req, res) => {
         }
 
         let discount = 0;
-        if (offer.discountType === 'percentage') {
-            discount = Math.round((offer.amount / 100) * applicableSubtotal);
-        } else {
-            discount = Math.min(offer.amount, applicableSubtotal);
-        }
+        const pct = Number(offer.percentage || 0);
+        discount = Math.round((pct / 100) * applicableSubtotal);
 
-        // If a user is provided (or from authenticated request), check if they are a "new user".
-        // New user definition: account created within last 30 days. For new users, cap discount to $10.
-        try {
-            const possibleUserId = (req.user && (req.user.id || req.user._id)) || userId;
-            const possibleEmail = email || (req.user && req.user.email);
-            let foundUser = null;
-            if (possibleUserId) foundUser = await User.findById(possibleUserId).lean();
-            if (!foundUser && possibleEmail) foundUser = await User.findOne({ email: possibleEmail }).lean();
-            if (foundUser) {
-                const created = new Date(foundUser.createdAt || Date.now());
-                const ageMs = Date.now() - created.getTime();
-                const days = Math.floor(ageMs / (1000 * 60 * 60 * 24));
-                const NEW_USER_DAYS = 30; // configurable threshold
-                const NEW_USER_CAP = 10; // cap amount in dollars for new users
-                if (days <= NEW_USER_DAYS) {
-                    // cap discount to NEW_USER_CAP
-                    discount = Math.min(discount, NEW_USER_CAP);
-                }
-            }
-        } catch (e) {
-            // ignore user-check errors and proceed with computed discount
-        }
+        // Remove new user cap as it was a fixed amount and the requirement is to remove fixed logic.
+        // If a cap is needed later, it should be percentage-based or explicitly requested.
+
+        // User-specific caps removed to strictly follow percentage-only rule.
 
         const newTotal = Math.max(0, (total || 0) - discount);
         return res.json({ valid: true, discount, newTotal, offer });

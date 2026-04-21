@@ -7,15 +7,15 @@ import { useDeleteOffer, useUpdateOffer } from './hooks/useAdminOffers';
 type Offer = {
   _id: string;
   title: string;
-  appliesTo: 'all' | 'product';
-  productId?: string;
-  discountType: 'percentage' | 'fixed';
-  amount: number;
-  active: boolean;
+  appliesTo: 'all' | 'selected';
+  productIds?: string[];
+  percentage: number;
+  status: 'active' | 'inactive';
   startsAt?: string;
   endsAt?: string;
+  bank?: string;
+  paymentMethods?: string[];
 };
-
 
 const OffersList: React.FC = () => {
   const queryClient = useQueryClient();
@@ -45,57 +45,65 @@ const OffersList: React.FC = () => {
           <h4 className="text-lg font-medium">Manage Offers</h4>
           <div className="text-sm text-muted">{offers.length} offers</div>
         </div>
-        <p className="text-xs text-muted mb-4">Active offers will be applied to product listings automatically.</p>
+        <p className="text-xs text-muted mb-4">Percentage-based offers are applied to product listings.</p>
 
         <div className="grid grid-cols-1 gap-4">
           {offers.map(o => (
-            <div key={o._id} className="flex items-start gap-4 p-4 border rounded-lg hover:shadow">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <h5 className="font-semibold text-base">{o.title}</h5>
-                  <span className={`text-xs px-2 py-1 rounded ${o.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>{o.active ? 'Active' : 'Paused'}</span>
+            <div key={o._id} className="flex flex-col gap-4 p-4 border rounded-lg hover:shadow">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h5 className="font-semibold text-base">{o.title}</h5>
+                    <span className={`text-xs px-2 py-1 rounded ${o.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>{o.status === 'active' ? 'Active' : 'Inactive'}</span>
+                  </div>
+                  <div className="mt-2 text-sm text-muted flex items-center gap-4">
+                    <div className="flex items-center gap-1"><Tag size={14} /> <span>{o.appliesTo === 'all' ? 'All products' : `Selected Items`}</span></div>
+                    <div className="flex items-center gap-1"><Calendar size={14} /> <span>{o.startsAt ? new Date(o.startsAt).toLocaleDateString() : '—'}</span></div>
+                    <div className="text-sm font-bold text-primary">{o.percentage}% OFF</div>
+                  </div>
                 </div>
-                <div className="mt-2 text-sm text-muted flex items-center gap-4">
-                  <div className="flex items-center gap-1"><Tag size={14} /> <span>{o.appliesTo === 'all' ? 'All products' : `Product: ${o.productId || '—'}`}</span></div>
-                  <div className="flex items-center gap-1"><Calendar size={14} /> <span>{o.startsAt ? new Date(o.startsAt).toLocaleDateString() : '—'} → {o.endsAt ? new Date(o.endsAt).toLocaleDateString() : '—'}</span></div>
-                  <div className="text-sm font-medium">{o.discountType === 'percentage' ? `${o.amount}% off` : `₹${o.amount} off`}</div>
-                </div>
-              </div>
 
-              <div className="flex flex-col items-end gap-2">
                 <div className="flex gap-2">
-                  <button title="Edit" onClick={() => { setEditingId(o._id); setFormState({ title: o.title, appliesTo: o.appliesTo, productId: o.productId || '', discountType: o.discountType, amount: o.amount, active: o.active }); }} className="p-2 border rounded hover:bg-accent/50"><Edit3 size={16} /></button>
-                  <button title={o.active ? 'Pause' : 'Resume'} onClick={() => updateMut.mutate({ id: o._id, payload: { active: !o.active } })} className="p-2 border rounded hover:bg-accent/50">{o.active ? <Pause size={16} /> : <Play size={16} />}</button>
+                  <button title="Edit" onClick={() => { setEditingId(o._id); setFormState({ ...o }); }} className="p-2 border rounded hover:bg-accent/50"><Edit3 size={16} /></button>
+                  <button title={o.status === 'active' ? 'Pause' : 'Resume'} onClick={() => updateMut.mutate({ id: o._id, payload: { status: o.status === 'active' ? 'inactive' : 'active' } })} className="p-2 border rounded hover:bg-accent/50">{o.status === 'active' ? <Pause size={16} /> : <Play size={16} />}</button>
                   <button title="Delete" onClick={() => { if (confirm('Delete this offer?')) deleteMut.mutate(o._id); }} className="p-2 border rounded text-red-600 hover:bg-red-50"><Trash2 size={16} /></button>
                 </div>
-                <div className="text-xs text-muted">ID: {o._id.slice(0,8)}</div>
               </div>
 
               {editingId === o._id && (
-                <div className="w-full mt-4 col-span-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 w-full">
-                    <input className="border p-2 rounded" value={formState.title || ''} onChange={e => setFormState((s: any) => ({ ...s, title: e.target.value }))} />
-                    <input className="border p-2 rounded" placeholder="Bank (optional)" value={formState.bank || ''} onChange={e => setFormState((s: any) => ({ ...s, bank: e.target.value }))} />
-                    <select className="border p-2 rounded" value={formState.appliesTo} onChange={e => setFormState((s: any) => ({ ...s, appliesTo: e.target.value }))}>
-                      <option value="all">All</option>
-                      <option value="product">Product</option>
-                    </select>
-                    {formState.appliesTo === 'product' && <input className="border p-2 rounded" placeholder="Product ID" value={formState.productId || ''} onChange={e => setFormState((s: any) => ({ ...s, productId: e.target.value }))} />}
-                    <select className="border p-2 rounded" value={formState.discountType} onChange={e => setFormState((s: any) => ({ ...s, discountType: e.target.value }))}>
-                      <option value="percentage">Percentage</option>
-                      <option value="fixed">Fixed</option>
-                    </select>
-                    <input type="number" className="border p-2 rounded" value={formState.amount} onChange={e => setFormState((s: any) => ({ ...s, amount: Number(e.target.value) }))} />
-                    <input className="border p-2 rounded" placeholder="Payment methods (comma separated)" value={formState.paymentMethods ? formState.paymentMethods.join(',') : ''} onChange={e => setFormState((s: any) => ({ ...s, paymentMethods: e.target.value.split(',').map((x:string)=>x.trim()).filter(Boolean) }))} />
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm">Active</label>
-                      <input type="checkbox" checked={!!formState.active} onChange={e => setFormState((s: any) => ({ ...s, active: e.target.checked }))} />
+                <div className="w-full border-t pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-muted">Title</label>
+                      <input className="w-full border p-2 rounded text-xs" value={formState.title || ''} onChange={e => setFormState((s: any) => ({ ...s, title: e.target.value }))} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-muted">Bank</label>
+                      <input className="w-full border p-2 rounded text-xs" placeholder="Bank (optional)" value={formState.bank || ''} onChange={e => setFormState((s: any) => ({ ...s, bank: e.target.value }))} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-muted">Percentage (%)</label>
+                      <input type="number" className="w-full border p-2 rounded text-xs" value={formState.percentage} onChange={e => setFormState((s: any) => ({ ...s, percentage: Number(e.target.value) }))} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-muted">Applies To</label>
+                      <select className="w-full border p-2 rounded text-xs" value={formState.appliesTo} onChange={e => setFormState((s: any) => ({ ...s, appliesTo: e.target.value }))}>
+                        <option value="all">All</option>
+                        <option value="selected">Selected</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-bold text-muted">Status</label>
+                      <select className="w-full border p-2 rounded text-xs" value={formState.status} onChange={e => setFormState((s: any) => ({ ...s, status: e.target.value }))}>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
                     </div>
                   </div>
 
-                  <div className="flex gap-2 mt-3">
-                    <button className="px-3 py-1 bg-primary text-white rounded" onClick={() => { updateMut.mutate({ id: o._id, payload: formState }); setEditingId(null); }}>Save</button>
-                    <button className="px-3 py-1 border rounded" onClick={() => setEditingId(null)}>Cancel</button>
+                  <div className="flex gap-2 mt-4">
+                    <button className="px-4 py-2 bg-primary text-white text-xs font-bold rounded" onClick={() => { updateMut.mutate({ id: o._id, payload: formState }); setEditingId(null); }}>Update Offer</button>
+                    <button className="px-4 py-2 border text-xs font-bold rounded" onClick={() => setEditingId(null)}>Cancel</button>
                   </div>
                 </div>
               )}
