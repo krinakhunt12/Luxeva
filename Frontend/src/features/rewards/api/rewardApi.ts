@@ -1,4 +1,4 @@
-import { apiFetch } from '../../../../utils/apiClient';
+import { apiFetch } from '../../../utils/apiClient';
 
 export const fetchPoints = async () => {
   return apiFetch('/api/rewards');

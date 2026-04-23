@@ -1,4 +1,4 @@
-import { apiFetch } from '../../../../utils/apiClient';
+import { apiFetch } from '../../../utils/apiClient';
 
 export const purchaseGiftCard = async (amount: number, opts: { code?: string; expiresAt?: string } = {}) => {
   const body: any = { amount };

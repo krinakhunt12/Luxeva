@@ -22,8 +22,6 @@ The frontend of Luxeva is a high-performance React application designed for a pr
    Create a `.env` file in this directory and add your credentials:
    ```env
    VITE_API_URL=https://luxeva.onrender.com/api
-   VITE_FIREBASE_API_KEY=your_key
-   VITE_GEMINI_API_KEY=your_gemini_key
    ```
 
 3. **Run Development Server:**
