@@ -1,14 +1,39 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🖥️ Luxeva Frontend
 
-## Run Locally
+The frontend of Luxeva is a high-performance React application designed for a premium shopping experience.
 
-**Prerequisites:**  Node.js
+## 🛠️ Tech Stack
+- **React 19** with Vite for lightning-fast builds.
+- **TypeScript** for type-safe development.
+- **Tailwind CSS 4** for modern, utility-first styling.
+- **Framer Motion** for smooth, luxurious animations.
+- **Redux Toolkit** for predictable state management.
+- **React Query** for efficient server-state handling.
+- **Lucide React** for beautiful icons.
 
+## 🚀 Getting Started
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Environment Configuration:**
+   Create a `.env` file in this directory and add your credentials:
+   ```env
+   VITE_API_URL=https://luxeva.onrender.com/api
+   VITE_FIREBASE_API_KEY=your_key
+   VITE_GEMINI_API_KEY=your_gemini_key
+   ```
+
+3. **Run Development Server:**
+   ```bash
+   npm run dev
+   ```
+   The app will run on `http://localhost:3000`.
+
+## 🏗️ Key Components
+- `src/components/Layout.tsx`: Main application wrapper.
+- `src/pages/`: Page-level components (Home, ProductDetail, Cart, Admin, etc.)
+- `src/features/`: Redux slices and business logic hooks.
+- `src/styles/`: Global CSS and Tailwind configurations.
