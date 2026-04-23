@@ -99,11 +99,16 @@ export default function ProductForm({ open, onClose, onSave, initial }: Props) {
               Object.entries(form).forEach(([key, value]) => {
                 if (key === 'images' && Array.isArray(value)) {
                   value.forEach(v => {
-                    if (v instanceof File) formData.append('images', v);
-                    else formData.append('images', v);
+                    if ((v as any) instanceof File) formData.append('images', v);
+                    else if (typeof v === 'string') formData.append('images', v);
                   });
                 } else if (value !== undefined) {
-                  formData.append(key, value as string);
+                  // Stringify nested objects (like variants) so they can be parsed by the backend
+                  if (typeof value === 'object' && value !== null && !(value instanceof File)) {
+                    formData.append(key, JSON.stringify(value));
+                  } else {
+                    formData.append(key, value as any);
+                  }
                 }
               });
               onSave(formData as any);

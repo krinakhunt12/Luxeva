@@ -5,15 +5,10 @@ import {
   Plus,
   Trash2,
   Edit2,
-  Package,
-  Users,
-  ShoppingBag,
-  LayoutDashboard,
   X,
   Save,
   Loader2,
   Search,
-  MessageSquare,
   CheckCircle,
   Eye
 } from 'lucide-react';

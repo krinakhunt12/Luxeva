@@ -44,42 +44,55 @@ export default function App() {
   const currentUser = JSON.parse(localStorage.getItem('luxeva_user') || 'null');
   const isAdmin = currentUser && currentUser.role === 'admin';
 
-  if (isAdminRoute && !isAdmin) {
-    // Allow access to admin login page; otherwise redirect to admin-specific login
-    if (location.pathname === '/admin/login') {
+  const isAuthenticated = !!localStorage.getItem('luxeva_token');
+
+  // Handle Admin Routes
+  if (isAdminRoute) {
+    if (isAdmin) {
+      // If already logged in as admin, redirect from login page to dashboard
+      if (location.pathname === '/admin/login') {
+        return <Navigate to="/admin" replace />;
+      }
+
+      return (
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="products" element={<ProductsPage />} />
+              <Route path="users" element={<UsersManagement />} />
+              <Route path="orders" element={<OrdersManagement />} />
+              <Route path="offers" element={<OffersPage />} />
+              <Route path="inquiries" element={<InquiriesPage />} />
+              <Route path="add-product" element={<AddProduct />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Routes>
+        </ErrorBoundary>
+      );
+    } else {
+      // Not an admin, allow only login page or redirect to it
       return (
         <ErrorBoundary>
           <Routes>
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="*" element={<Navigate to="/admin/login" state={{ from: location.pathname }} replace />} />
           </Routes>
         </ErrorBoundary>
       );
     }
-    return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;
-  }
-
-  if (isAdminRoute) {
-    return (
-      <ErrorBoundary>
-        <Routes>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="products" element={<ProductsPage />} />
-            <Route path="users" element={<UsersManagement />} />
-            <Route path="orders" element={<OrdersManagement />} />
-            <Route path="offers" element={<OffersPage />} />
-            <Route path="inquiries" element={<InquiriesPage />} />
-            <Route path="add-product" element={<AddProduct />} />
-          </Route>
-        </Routes>
-      </ErrorBoundary>
-    );
   }
 
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/signup';
 
   if (isAuthRoute) {
+    // If already logged in, don't show login/signup pages
+    if (isAuthenticated) {
+      return <Navigate to="/account" replace />;
+    }
+
     return (
       <ErrorBoundary>
         <AnimatePresence mode="wait">

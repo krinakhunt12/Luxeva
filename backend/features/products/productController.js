@@ -268,6 +268,23 @@ const createProduct = async(req, res) => {
     try {
         const payload = req.body || {};
 
+        // Robust parsing for fields that might be stringified (happens with FormData/multer)
+        ['variants', 'colors', 'sizes', 'tags', 'images'].forEach(field => {
+            if (payload[field] && typeof payload[field] === 'string') {
+                try {
+                    // Try to parse if it looks like JSON
+                    if (payload[field].startsWith('{') || payload[field].startsWith('[')) {
+                        payload[field] = JSON.parse(payload[field]);
+                    }
+                } catch (e) {
+                    // If parsing fails and it's "[object Object]", it's definitely junk from frontend
+                    if (payload[field] === '[object Object]') {
+                        delete payload[field];
+                    }
+                }
+            }
+        });
+
         if (req.files && Array.isArray(req.files) && req.files.length) {
             const uploadedUrls = [];
             for (const file of req.files) {
@@ -304,6 +321,24 @@ const createProduct = async(req, res) => {
 const updateProduct = async(req, res) => {
     try {
         const payload = req.body || {};
+
+        // Robust parsing for fields that might be stringified (happens with FormData/multer)
+        ['variants', 'colors', 'sizes', 'tags', 'images'].forEach(field => {
+            if (payload[field] && typeof payload[field] === 'string') {
+                try {
+                    // Try to parse if it looks like JSON
+                    if (payload[field].startsWith('{') || payload[field].startsWith('[')) {
+                        payload[field] = JSON.parse(payload[field]);
+                    }
+                } catch (e) {
+                    // If parsing fails and it's "[object Object]", it's definitely junk from frontend
+                    if (payload[field] === '[object Object]') {
+                        delete payload[field];
+                    }
+                }
+            }
+        });
+
         if (req.files && Array.isArray(req.files) && req.files.length) {
             const uploadedUrls = [];
             for (const file of req.files) {
