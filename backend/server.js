@@ -36,6 +36,7 @@ async function start() {
         app.use('/api/users', userRoutes);
         app.use('/api/orders', orderRoutes);
         app.use('/api/offers', offerRoutes);
+        app.use('/api/admin/dashboard', require('./features/admin/dashboardRoutes'));
         app.use('/api/promos', require('./features/promos/promoRoutes'));
 
         // start background jobs
@@ -50,12 +51,44 @@ async function start() {
             });
         });
 
+        app.get('/api/contact', async (req, res) => {
+            try {
+                const contacts = await Contact.find().sort({ createdAt: -1 });
+                return res.json(contacts);
+            } catch (err) {
+                return res.status(500).json({ message: 'Failed to fetch contacts' });
+            }
+        });
+
         app.post('/api/contact', async(req, res) => {
-            const { firstName, lastName, email, subject, message } = req.body || {};
-            if (!firstName || !email || !message) return res.status(400).json({ message: 'Missing required fields' });
-            const contact = new Contact({ firstName, lastName, email, subject, message });
-            await contact.save();
-            return res.status(200).json({ ok: true });
+            const { name, email, phone, subject, message } = req.body || {};
+            if (!name || !email || !message) return res.status(400).json({ message: 'Missing required fields' });
+            
+            try {
+                const contact = new Contact({ name, email, phone, subject, message });
+                await contact.save();
+                return res.status(200).json({ ok: true, message: 'Message sent successfully' });
+            } catch (err) {
+                return res.status(500).json({ message: 'Failed to save message' });
+            }
+        });
+
+        app.delete('/api/contact/:id', async (req, res) => {
+            try {
+                await Contact.findByIdAndDelete(req.params.id);
+                return res.json({ ok: true, message: 'Contact deleted' });
+            } catch (err) {
+                return res.status(500).json({ message: 'Failed to delete contact' });
+            }
+        });
+
+        app.patch('/api/contact/:id/resolve', async (req, res) => {
+            try {
+                const contact = await Contact.findByIdAndUpdate(req.params.id, { status: 'resolved' }, { new: true });
+                return res.json(contact);
+            } catch (err) {
+                return res.status(500).json({ message: 'Failed to update contact' });
+            }
         });
 
         app.listen(PORT, '0.0.0.0', () => {});

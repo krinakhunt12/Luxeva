@@ -19,7 +19,9 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const { toggleWishlist, isInWishlist, addToCart } = useShop();
   const inWishlist = isInWishlist((product as any).id || (product as any)._id);
   const navigate = useNavigate();
-  const available = (product as any).inStock ?? (((product as any).stock ?? 0) > 0);
+  const stock = product.stock ?? 0;
+  const available = stock > 0;
+  const isLowStock = stock > 0 && stock <= 10;
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -118,6 +120,9 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           )}
           {product.isSale && !getOfferLabel(product) && (
             <span className="bg-gold text-white text-[8px] uppercase tracking-widest font-bold px-2 py-1 shadow-sm">Sale</span>
+          )}
+          {isLowStock && (
+            <span className="bg-red-500 text-white text-[8px] uppercase tracking-widest font-bold px-2 py-1 shadow-sm">Only {stock} Left</span>
           )}
         </div>
 

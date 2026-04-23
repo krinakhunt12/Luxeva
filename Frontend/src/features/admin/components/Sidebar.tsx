@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, Users, ShoppingCart, PlusSquare } from 'lucide-react';
+import { LayoutDashboard, Package, Users, ShoppingCart, PlusSquare, MessageSquare } from 'lucide-react';
 
 interface Props {
   collapsed?: boolean;
@@ -41,6 +41,11 @@ export default function Sidebar({ collapsed = false, onToggle }: Props) {
         <NavLink to="/admin/orders" className={linkClass}>
           <ShoppingCart size={18} />
           <span className={`${collapsed ? 'hidden' : 'block'} text-sm font-medium`}>Orders</span>
+        </NavLink>
+
+        <NavLink to="/admin/inquiries" className={linkClass}>
+          <MessageSquare size={18} />
+          <span className={`${collapsed ? 'hidden' : 'block'} text-sm font-medium`}>Inquiries</span>
         </NavLink>
 
         <NavLink to="/admin/offers" className={linkClass}>

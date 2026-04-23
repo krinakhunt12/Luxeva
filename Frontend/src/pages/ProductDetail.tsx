@@ -186,13 +186,14 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    const available = product?.stockByVariant?.[selectedColor]?.[selectedSize] ?? product?.stock ?? (product?.inStock ? 1 : 0);
-    if (!available || available < 1) return;
+    const stock = product.stock ?? 0;
+    if (stock <= 0) return;
     addToCart(product, selectedColor, selectedSize, quantity);
     navigate('/cart');
   };
 
-  const availableStock = product?.stockByVariant?.[selectedColor]?.[selectedSize] ?? product?.stock ?? 0;
+  const availableStock = product.stock ?? 0;
+  const isLowStock = availableStock > 0 && availableStock <= 10;
 
   const relatedProducts = (products || [])
     .filter((p: any) => p.category === product.category && (p.id || p._id) !== (product.id || product._id))
@@ -410,7 +411,17 @@ const ProductDetail = () => {
               {/* Quantity */}
               <div className="space-y-4">
                 <span className="text-[10px] uppercase tracking-widest font-bold">Quantity</span>
-                <div className="text-sm text-muted">{availableStock > 0 ? `${availableStock} left in selected color/size` : 'Out of stock for selected color/size'}</div>
+                <div className="flex flex-col gap-2">
+                  <div className={cn(
+                    "text-xs font-bold uppercase tracking-wider",
+                    availableStock === 0 ? "text-red-500" : isLowStock ? "text-red-500" : "text-green-600"
+                  )}>
+                    {availableStock === 0 ? 'Out of Stock' : isLowStock ? `Only ${availableStock} items left!` : 'In Stock'}
+                  </div>
+                  <div className="text-[10px] text-muted uppercase tracking-widest">
+                    Available: {availableStock} units
+                  </div>
+                </div>
                 <div className="flex items-center border border-accent w-max">
                   <button 
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -435,14 +446,14 @@ const ProductDetail = () => {
             <div className="space-y-4">
               <button 
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
+                disabled={availableStock <= 0}
                 className={cn(
                   "w-full py-5 text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-500 flex items-center justify-center gap-3",
-                  product.inStock ? "bg-primary text-white hover:bg-gold" : "bg-accent text-muted cursor-not-allowed"
+                  availableStock > 0 ? "bg-primary text-white hover:bg-gold" : "bg-accent text-muted cursor-not-allowed"
                 )}
               >
                 <ShoppingBag size={16} />
-                {product.inStock ? 'Add to Bag' : 'Out of Stock'}
+                {availableStock > 0 ? 'Add to Bag' : 'Sold Out'}
               </button>
               <button onClick={async () => {
                 try {

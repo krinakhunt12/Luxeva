@@ -23,6 +23,16 @@ const createOrder = async(req, res) => {
         const { items, shippingAddress, paymentMethod, total, saveAddress, appliedOffer, appliedGiftCard } = req.body || {};
         if (!Array.isArray(items) || items.length === 0 || !shippingAddress) return res.status(400).json({ message: 'Missing required fields' });
 
+        // Check stock for all items
+        const Product = require('../products/Product');
+        for (const item of items) {
+            const prod = await Product.findById(item.productId).lean();
+            if (!prod) return res.status(404).json({ message: `Product ${item.name} not found` });
+            if ((prod.stock || 0) < item.quantity) {
+                return res.status(400).json({ message: `Insufficient stock for ${item.name}. Available: ${prod.stock || 0}` });
+            }
+        }
+
         const order = new Order({ userId: authUserId, items, shippingAddress, paymentMethod: paymentMethod || 'unknown', total: total || 0, appliedOffer: appliedOffer || null, appliedGiftCard: appliedGiftCard || null, status: 'created' });
         await order.save();
 
@@ -50,6 +60,16 @@ const createOrder = async(req, res) => {
             }
         }
 
+        // decrement stock
+        try {
+            const Product = require('../products/Product');
+            for (const item of items) {
+                await Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.quantity } });
+            }
+        } catch (e) {
+            console.warn('stock decrement failed', e.message || e);
+        }
+
         return res.status(200).json(order);
     } catch (err) {
         console.error(err);
@@ -69,6 +89,10 @@ const buyNow = async(req, res) => {
         const Product = require('../products/Product');
         const prod = await Product.findById(productId).lean();
         if (!prod) return res.status(404).json({ message: 'Product not found' });
+        
+        if ((prod.stock || 0) < quantity) {
+            return res.status(400).json({ message: `Insufficient stock. Available: ${prod.stock || 0}` });
+        }
 
         const User = require('../user/User');
         const user = await User.findById(authUserId).lean();
@@ -82,6 +106,13 @@ const buyNow = async(req, res) => {
 
         const order = new Order({ userId: authUserId, items, shippingAddress, paymentMethod: 'one-click', total, status: 'created' });
         await order.save();
+
+        // decrement stock for buy-now
+        try {
+            await Product.findByIdAndUpdate(productId, { $inc: { stock: -quantity } });
+        } catch (e) {
+            console.warn('stock decrement failed', e.message || e);
+        }
 
         // award loyalty points for buy-now
         try {

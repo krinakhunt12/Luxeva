@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { showSuccess, showError } from '../utils/toastService';
+import { useContact } from '../features/contact/hooks/useContact';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import useContact from '../features/contact/hooks/useContact';
-
+import { showError, showSuccess } from '../utils/toastService';
 
 export default function Contact() {
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', subject: 'General Inquiry', message: '' });
-  const { mutate, isLoading, isError, isSuccess } = useContact();
+  const [form, setForm] = useState({ 
+    name: '', 
+    email: '', 
+    phone: '', 
+    subject: 'General Inquiry', 
+    message: '' 
+  });
+  
+  const { mutate, isPending } = useContact();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -17,7 +22,37 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutate(form);
+    
+    // Robust validation
+    if (!form.name.trim()) {
+      showError('Please enter your full name');
+      return;
+    }
+    if (!form.email.trim()) {
+      showError('Please enter your email address');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      showError('Please enter a valid email address');
+      return;
+    }
+    if (!form.message.trim()) {
+      showError('Please enter your message');
+      return;
+    }
+    
+    mutate(form, {
+      onSuccess: () => {
+        setForm({ 
+          name: '', 
+          email: '', 
+          phone: '', 
+          subject: 'General Inquiry', 
+          message: '' 
+        });
+      }
+    });
   };
 
   return (
@@ -42,14 +77,39 @@ export default function Contact() {
 
           <div className="bg-white border border-accent p-12 shadow-sm">
             <form className="space-y-8" onSubmit={handleSubmit}>
+              <Input 
+                name="name" 
+                label="Full Name" 
+                value={form.name} 
+                onChange={handleChange} 
+                required 
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Input name="firstName" label="First Name" value={form.firstName} onChange={handleChange} />
-                <Input name="lastName" label="Last Name" value={form.lastName} onChange={handleChange} />
+                <Input 
+                  name="email" 
+                  label="Email Address" 
+                  type="email" 
+                  value={form.email} 
+                  onChange={handleChange} 
+                  required 
+                />
+                <Input 
+                  name="phone" 
+                  label="Phone Number" 
+                  type="tel" 
+                  value={form.phone} 
+                  onChange={handleChange} 
+                />
               </div>
-              <Input name="email" label="Email Address" type="email" value={form.email} onChange={handleChange} />
               <div className="space-y-2">
                 <label htmlFor="subject" className="text-[10px] uppercase tracking-widest font-bold">Subject</label>
-                <select id="subject" name="subject" value={form.subject} onChange={handleChange} className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors">
+                <select 
+                  id="subject" 
+                  name="subject" 
+                  value={form.subject} 
+                  onChange={handleChange} 
+                  className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors"
+                >
                   <option>General Inquiry</option>
                   <option>Order Support</option>
                   <option>Returns & Exchanges</option>
@@ -58,13 +118,17 @@ export default function Contact() {
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] uppercase tracking-widest font-bold">Message</label>
-                <textarea name="message" value={form.message} onChange={handleChange} rows={6} className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors resize-none"></textarea>
+                <textarea 
+                  name="message" 
+                  value={form.message} 
+                  onChange={handleChange} 
+                  rows={6} 
+                  required
+                  className="w-full bg-bg border border-accent px-4 py-3 text-xs focus:outline-none focus:border-primary transition-colors resize-none"
+                ></textarea>
               </div>
 
-              <Button type="submit" disabled={isLoading}>{isLoading ? 'Sending...' : 'Send Message'}</Button>
-
-              {isError && <p className="text-red-600 text-sm">Failed to send message.</p>}
-              {isSuccess && <p className="text-green-600 text-sm">Message sent. We'll reply shortly.</p>}
+              <Button type="submit" disabled={isPending}>{isPending ? 'Sending...' : 'Send Message'}</Button>
             </form>
           </div>
         </div>

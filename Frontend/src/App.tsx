@@ -36,6 +36,7 @@ import OffersPage from './features/admin/pages/OffersPage';
 import UsersManagement from './features/admin/pages/UsersPage';
 import OrdersManagement from './features/admin/pages/OrdersPage';
 import AddProduct from './features/admin/pages/AddProduct';
+import InquiriesPage from './features/admin/pages/InquiriesPage';
 
 export default function App() {
   const location = useLocation();
@@ -68,6 +69,7 @@ export default function App() {
             <Route path="users" element={<UsersManagement />} />
             <Route path="orders" element={<OrdersManagement />} />
             <Route path="offers" element={<OffersPage />} />
+            <Route path="inquiries" element={<InquiriesPage />} />
             <Route path="add-product" element={<AddProduct />} />
           </Route>
         </Routes>
