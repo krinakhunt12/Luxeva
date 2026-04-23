@@ -10,12 +10,12 @@ function createTransporter() {
             auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
         });
     }
-    return { sendMail: async(opts) => { return Promise.resolve(); } };
+    return { sendMail: async (opts) => { return Promise.resolve(); } };
 }
 
 const transporter = createTransporter();
 
-const listCarts = async(req, res) => {
+const listCarts = async (req, res) => {
     try {
         const { status, page = 1, limit = 50 } = req.query;
         const q = {};
@@ -33,14 +33,14 @@ const listCarts = async(req, res) => {
     }
 };
 
-const sendNow = async(req, res) => {
+const sendNow = async (req, res) => {
     try {
         const id = req.params.id;
         const cart = await AbandonedCart.findById(id).lean();
         if (!cart) return res.status(404).json({ message: 'Cart not found' });
         if (!cart.email) return res.status(400).json({ message: 'No email for this cart' });
 
-        const url = `${process.env.APP_URL || 'http://localhost:3000'}/wishlists/${cart.token}`;
+        const url = `${process.env.APP_URL || 'https://luxeva.vercel.app'}/wishlists/${cart.token}`;
         const html = `<p>We saved your cart. Complete your purchase: <a href="${url}">Resume Purchase</a></p>`;
         await transporter.sendMail({ from: process.env.EMAIL_FROM || 'noreply@luxeva.test', to: cart.email, subject: 'You left items in your bag', html });
         await AbandonedCart.updateOne({ _id: cart._id }, { notifiedAt: new Date() });
@@ -51,12 +51,12 @@ const sendNow = async(req, res) => {
     }
 };
 
-const previewTemplate = async(req, res) => {
+const previewTemplate = async (req, res) => {
     try {
         const id = req.query.id;
         const cart = id ? await AbandonedCart.findById(id).lean() : null;
         const token = cart ? cart.token : 'demo-token';
-        const url = `${process.env.APP_URL || 'http://localhost:3000'}/wishlists/${token}`;
+        const url = `${process.env.APP_URL || 'https://luxeva.vercel.app'}/wishlists/${token}`;
         const html = `<p>We saved your cart. Complete your purchase: <a href="${url}">Resume Purchase</a></p>`;
         return res.json({ html });
     } catch (err) {
@@ -67,7 +67,7 @@ const previewTemplate = async(req, res) => {
 
 const crypto = require('crypto');
 
-const upsertCart = async(req, res) => {
+const upsertCart = async (req, res) => {
     try {
         const { userId, email, cart } = req.body || {};
         if (!cart || !Array.isArray(cart)) return res.status(400).json({ message: 'Cart required' });

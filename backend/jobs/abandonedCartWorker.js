@@ -12,19 +12,19 @@ function createTransporter() {
         });
     }
     // fallback - logs
-    return { sendMail: async(opts) => { return Promise.resolve(); } };
+    return { sendMail: async (opts) => { return Promise.resolve(); } };
 }
 
 const transporter = createTransporter();
 
 // run every hour
-cron.schedule('0 * * * *', async() => {
+cron.schedule('0 * * * *', async () => {
     try {
         const cutoff = new Date(Date.now() - 1000 * 60 * 60 * 24); // 24h
         const carts = await AbandonedCart.find({ recovered: false, notifiedAt: { $exists: false }, lastUpdated: { $lte: cutoff } }).limit(200).lean();
         for (const c of carts) {
             if (!c.email) continue; // need email to send
-            const url = `${process.env.APP_URL || 'http://localhost:3000'}/wishlists/${c.token}`;
+            const url = `${process.env.APP_URL || 'https://luxeva.vercel.app'}/wishlists/${c.token}`;
             const html = `<p>We saved your cart. Complete your purchase: <a href="${url}">Resume Purchase</a></p>`;
             await transporter.sendMail({
                 from: process.env.EMAIL_FROM || 'noreply@luxeva.test',

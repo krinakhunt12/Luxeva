@@ -103,7 +103,7 @@ cd Frontend
 npm run dev
 ```
 
-The app will be available at `http://localhost:3000` (Frontend) and the API at `https://luxeva.onrender.com/api` (Backend).
+The app will be available at `https://luxeva.vercel.app` (Frontend) and the API at `https://luxeva.onrender.com/api` (Backend).
 
 ---
 

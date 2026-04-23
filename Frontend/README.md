@@ -28,7 +28,7 @@ The frontend of Luxeva is a high-performance React application designed for a pr
    ```bash
    npm run dev
    ```
-   The app will run on `http://localhost:3000`.
+   The app will run on `https://luxeva.vercel.app`.
 
 ## 🏗️ Key Components
 - `src/components/Layout.tsx`: Main application wrapper.
