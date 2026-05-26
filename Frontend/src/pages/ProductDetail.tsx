@@ -222,7 +222,7 @@ const ProductDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           {/* Gallery */}
           <div className="lg:col-span-7 flex flex-col md:flex-row gap-4 min-h-[520px]">
-            <div className="order-2 md:order-1 flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto no-scrollbar">
+            <div className="order-2 md:order-1 flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto no-scrollbar py-2 md:py-0">
               {currentImages.map((img, i) => (
                 <button 
                   key={i}
@@ -556,7 +556,7 @@ const ProductDetail = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-bg z-[210] p-10 shadow-2xl"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-2xl max-h-[90vh] overflow-y-auto bg-bg z-[210] p-6 md:p-10 shadow-2xl"
             >
               <div className="flex justify-between items-center mb-10">
                 <h2 className="text-xl uppercase tracking-[0.2em] font-light">Size Guide</h2>

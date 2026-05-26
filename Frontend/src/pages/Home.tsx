@@ -34,7 +34,7 @@ const Hero = () => {
         className="relative z-10 text-center text-white px-6"
       >
         <span className="text-[10px] uppercase tracking-[0.5em] font-bold mb-6 block">The New Standard</span>
-        <h1 className="text-5xl md:text-8xl font-light tracking-tighter mb-10 leading-[0.9] max-w-4xl mx-auto">
+        <h1 className="text-4xl sm:text-6xl md:text-8xl font-light tracking-tighter mb-10 leading-tight md:leading-[0.9] max-w-4xl mx-auto">
           Elegance in <br /> <span className="italic font-serif">Simplicity</span>
         </h1>
         <div className="flex flex-col md:flex-row items-center justify-center gap-6">
@@ -188,8 +188,8 @@ const ShopByLook = () => (
         <h2 className="text-4xl md:text-5xl font-light tracking-tight italic font-serif">Shop By Look</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[1000px] md:h-[800px]">
-        <div className="md:col-span-4 h-full relative group overflow-hidden bg-accent">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:h-[800px]">
+        <div className="md:col-span-4 aspect-[4/5] md:aspect-auto md:h-full relative group overflow-hidden bg-accent">
           <img src="https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?q=80&w=800&auto=format&fit=crop" alt="Look 1" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
           <div className="absolute bottom-10 left-10">
@@ -198,8 +198,8 @@ const ShopByLook = () => (
           </div>
         </div>
         
-        <div className="md:col-span-8 grid grid-rows-2 gap-6 h-full">
-          <div className="grid grid-cols-2 gap-6">
+        <div className="md:col-span-8 flex flex-col gap-6 md:grid md:grid-rows-2 md:h-full">
+          <div className="grid grid-cols-2 gap-6 aspect-[4/3] md:aspect-auto">
             <div className="relative group overflow-hidden bg-accent">
               <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop" alt="Look 2" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
@@ -217,7 +217,7 @@ const ShopByLook = () => (
               </div>
             </div>
           </div>
-          <div className="relative group overflow-hidden bg-accent">
+          <div className="relative group overflow-hidden bg-accent aspect-[16/9] md:aspect-auto">
             <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1200&auto=format&fit=crop" alt="Look 4" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
             <div className="absolute bottom-10 left-10">

@@ -194,18 +194,18 @@ export const Wishlist = () => {
   return (
     <div className="pt-40 pb-20 bg-bg min-h-screen">
       <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-5xl font-light tracking-tighter uppercase">Wishlist</h1>
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-12">
+          <h1 className="text-3xl sm:text-5xl font-light tracking-tighter uppercase">Wishlist</h1>
+          <div className="flex items-center gap-4 w-full sm:w-auto">
             {shareUrl ? (
-              <div className="flex items-center gap-2">
-                <a href={shareUrl} target="_blank" rel="noreferrer" className="text-sm underline">Open Link</a>
-                <button onClick={() => navigator.clipboard.writeText(shareUrl)} className="text-sm bg-primary text-white px-4 py-2">Copy</button>
-                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer" className="text-sm bg-sky-600 text-white px-4 py-2">Twitter</a>
-                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer" className="text-sm bg-blue-700 text-white px-4 py-2">Facebook</a>
+              <div className="flex flex-wrap items-center gap-2">
+                <a href={shareUrl} target="_blank" rel="noreferrer" className="text-sm underline mr-2">Open Link</a>
+                <button onClick={() => navigator.clipboard.writeText(shareUrl)} className="text-xs bg-primary text-white px-4 py-2 hover:bg-gold transition-colors font-bold uppercase tracking-wider">Copy</button>
+                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer" className="text-xs bg-sky-600 text-white px-4 py-2 hover:bg-sky-700 transition-colors font-bold uppercase tracking-wider">Twitter</a>
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer" className="text-xs bg-blue-700 text-white px-4 py-2 hover:bg-blue-800 transition-colors font-bold uppercase tracking-wider">Facebook</a>
               </div>
             ) : (
-              <button onClick={handleShare} disabled={sharing || wishlist.length===0} className="flex items-center gap-2 bg-primary text-white px-4 py-2">
+              <button onClick={handleShare} disabled={sharing || wishlist.length===0} className="flex items-center gap-2 bg-primary text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-gold transition-colors">
                 <Share2 size={14} /> Share Wishlist
               </button>
             )}

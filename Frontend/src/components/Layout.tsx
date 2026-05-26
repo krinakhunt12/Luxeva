@@ -74,160 +74,159 @@ const Header = () => {
   ];
 
   return (
-    <header className={cn(
-      "sticky top-0 left-0 w-full z-50 transition-all duration-500",
-      (isScrolled || !isHome) ? "bg-bg/95 backdrop-blur-md border-b border-accent py-4" : "bg-transparent py-6"
-    )}>
-      {/* Left: Logo */}
+    <>
+      <header className={cn(
+        "sticky top-0 left-0 w-full z-50 transition-all duration-500",
+        (isScrolled || !isHome) ? "bg-transparent backdrop-blur-md border-b border-accent/20 py-4" : "bg-transparent py-6"
+      )}>
+        <div className="container mx-auto px-6 flex items-center justify-between relative">
+          <div className="flex items-center gap-4">
+            {/* Mobile Menu Toggle */}
+            <button className="lg:hidden z-10 hover:text-gold transition-colors" onClick={() => setIsMobileMenuOpen(true)}>
+              <Menu size={20} />
+            </button>
 
-      <div className="container mx-auto px-6 flex items-center justify-between relative">
-        {/* Left: Logo */}
-        <Link to="/" className="z-10" aria-label="Luxeva home">
-          <h1 className="text-2xl tracking-[0.3em] font-light uppercase">Luxeva</h1>
-        </Link>
+            {/* Left: Logo */}
+            <Link to="/" className="z-10" aria-label="Luxeva home">
+              <h1 className="text-xl md:text-2xl tracking-[0.3em] font-light uppercase">Luxeva</h1>
+            </Link>
+          </div>
 
+          {/* Center: Nav */}
+          <nav className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
+            {navLinks.map((link) => (
+              <div key={link.name} className="group relative">
+                <Link 
+                  to={link.path}
+                  className="text-[11px] uppercase tracking-[0.2em] font-medium hover:text-gold transition-colors relative"
+                >
+                  {link.name}
+                  <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-gold transition-all duration-300 group-hover:w-full" />
+                </Link>
+                
+                {link.hasMegaMenu && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                    <div className="bg-bg border border-accent p-8 w-[600px] shadow-xl grid grid-cols-3 gap-8">
+                      <div>
+                        <h4 className="text-[10px] uppercase tracking-widest font-bold mb-4 text-muted">Shop By Category</h4>
+                        <ul className="space-y-2">
+                          <li><Link to="/collections/women" className="text-xs hover:text-gold">Women</Link></li>
+                          <li><Link to="/collections/men" className="text-xs hover:text-gold">Men</Link></li>
+                          <li><Link to="/collections/accessories" className="text-xs hover:text-gold">Accessories</Link></li>
+                          <li><Link to="/collections/sale" className="text-xs text-gold font-medium">Sale</Link></li>
+                        </ul>
+                      </div>
+                      <div className="col-span-2 grid grid-cols-2 gap-4">
+                        <Link to="/collections/women" className="group/img relative aspect-[4/5] overflow-hidden">
+                          <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=400&auto=format&fit=crop" alt="Women" className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110" referrerPolicy="no-referrer" />
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <span className="text-white text-[10px] uppercase tracking-widest font-bold">Women</span>
+                          </div>
+                        </Link>
+                        <Link to="/collections/men" className="group/img relative aspect-[4/5] overflow-hidden">
+                          <img src="https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?q=80&w=400&auto=format&fit=crop" alt="Men" className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110" referrerPolicy="no-referrer" />
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <span className="text-white text-[10px] uppercase tracking-widest font-bold">Men</span>
+                          </div>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-        {/* Center: Nav */}
-        <nav className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
-          {navLinks.map((link) => (
-            <div key={link.name} className="group relative">
-              <Link 
-                to={link.path}
-                className="text-[11px] uppercase tracking-[0.2em] font-medium hover:text-gold transition-colors relative"
-              >
-                {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-gold transition-all duration-300 group-hover:w-full" />
-              </Link>
-              
-              {link.hasMegaMenu && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                  <div className="bg-bg border border-accent p-8 w-[600px] shadow-xl grid grid-cols-3 gap-8">
-                    <div>
-                      <h4 className="text-[10px] uppercase tracking-widest font-bold mb-4 text-muted">Shop By Category</h4>
-                      <ul className="space-y-2">
-                        <li><Link to="/collections/women" className="text-xs hover:text-gold">Women</Link></li>
-                        <li><Link to="/collections/men" className="text-xs hover:text-gold">Men</Link></li>
-                        <li><Link to="/collections/accessories" className="text-xs hover:text-gold">Accessories</Link></li>
-                        <li><Link to="/collections/sale" className="text-xs text-gold font-medium">Sale</Link></li>
+                {/* Standard Dropdown */}
+                {link.dropdown && (
+                  <div className="absolute top-full left-0 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                    <div className="bg-white border border-accent py-4 w-56 shadow-2xl">
+                      <ul className="space-y-1">
+                        {link.dropdown.map((item) => (
+                          <li key={item.name}>
+                            <Link 
+                              to={item.path} 
+                              className="block px-8 py-3 text-[13px] text-primary hover:bg-bg hover:text-gold transition-all duration-300 font-light"
+                            >
+                              {item.name}
+                            </Link>
+                          </li>
+                        ))}
                       </ul>
                     </div>
-                    <div className="col-span-2 grid grid-cols-2 gap-4">
-                      <Link to="/collections/women" className="group/img relative aspect-[4/5] overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=400&auto=format&fit=crop" alt="Women" className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110" referrerPolicy="no-referrer" />
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                          <span className="text-white text-[10px] uppercase tracking-widest font-bold">Women</span>
-                        </div>
-                      </Link>
-                      <Link to="/collections/men" className="group/img relative aspect-[4/5] overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?q=80&w=400&auto=format&fit=crop" alt="Men" className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110" referrerPolicy="no-referrer" />
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                          <span className="text-white text-[10px] uppercase tracking-widest font-bold">Men</span>
-                        </div>
-                      </Link>
-                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+            ))}
+          </nav>
 
-              {/* Standard Dropdown */}
-              {link.dropdown && (
-                <div className="absolute top-full left-0 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                  <div className="bg-white border border-accent py-4 w-56 shadow-2xl">
-                    <ul className="space-y-1">
-                      {link.dropdown.map((item) => (
-                        <li key={item.name}>
-                          <Link 
-                            to={item.path} 
-                            className="block px-8 py-3 text-[13px] text-primary hover:bg-bg hover:text-gold transition-all duration-300 font-light"
+          {/* Right: Icons */}
+          <div className="flex items-center gap-4 md:gap-6">
+            <Link to="/search" className="hover:text-gold transition-colors">
+              <Search size={18} strokeWidth={1.5} />
+            </Link>
+            <Link to="/wishlist" className="hover:text-gold transition-colors relative">
+              <Heart size={18} strokeWidth={1.5} />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-gold text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+            <button
+              onClick={() => navigate('/cart')}
+              className="hover:text-gold transition-colors relative"
+            >
+              <ShoppingBag size={18} strokeWidth={1.5} />
+              {cartCount > 0 && (
+                <motion.span
+                  key={cartCount}
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="absolute -top-2 -right-2 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold"
+                >
+                  {cartCount}
+                </motion.span>
+              )}
+            </button>
+
+            {!user ? (
+              <div className="hidden lg:flex items-center gap-3">
+                <Link to="/login" className="text-sm uppercase tracking-widest px-3 py-2 hover:text-gold transition-colors">Login</Link>
+                <Link to="/signup" className="text-sm uppercase tracking-widest px-3 py-2 bg-primary text-white rounded hover:bg-gold transition-colors">Sign Up</Link>
+              </div>
+            ) : (
+              <div className="group relative">
+                <Link to="/account" className="hover:text-gold transition-colors block">
+                  <User size={18} strokeWidth={1.5} />
+                </Link>
+                {user && (
+                  <div className="absolute top-full right-0 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                    <div className="bg-bg border border-accent p-4 w-48 shadow-xl space-y-3">
+                      <div className="pb-2 border-b border-accent">
+                        <p className="text-[10px] uppercase tracking-widest font-bold truncate">{user.displayName || 'Account'}</p>
+                        <p className="text-[8px] text-muted truncate">{user.email}</p>
+                      </div>
+                      <ul className="space-y-2">
+                        {isAdmin && (
+                          <li><Link to="/admin" className="text-[10px] uppercase tracking-widest text-gold font-bold hover:text-primary block">Admin Panel</Link></li>
+                        )}
+                        <li><Link to="/account" className="text-[10px] uppercase tracking-widest hover:text-gold block">Profile</Link></li>
+                        <li><Link to="/orders" className="text-[10px] uppercase tracking-widest hover:text-gold block">Orders</Link></li>
+                        <li>
+                          <button
+                            onClick={() => logout()}
+                            className="text-[10px] uppercase tracking-widest text-red-500 hover:text-red-600 block w-full text-left"
                           >
-                            {item.name}
-                          </Link>
+                            Logout
+                          </button>
                         </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </nav>
-
-        {/* Mobile Menu Toggle */}
-        <button className="lg:hidden z-10" onClick={() => setIsMobileMenuOpen(true)}>
-          <Menu size={20} />
-        </button>
-
-        {/* Right: Icons */}
-        <div className="flex items-center gap-6">
-          <Link to="/search" className="hover:text-gold transition-colors">
-            <Search size={18} strokeWidth={1.5} />
-          </Link>
-          <Link to="/wishlist" className="hover:text-gold transition-colors relative">
-            <Heart size={18} strokeWidth={1.5} />
-            {wishlist.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-gold text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
-          <button
-            onClick={() => navigate('/cart')}
-            className="hover:text-gold transition-colors relative"
-          >
-            <ShoppingBag size={18} strokeWidth={1.5} />
-            {cartCount > 0 && (
-              <motion.span
-                key={cartCount}
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="absolute -top-2 -right-2 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold"
-              >
-                {cartCount}
-              </motion.span>
-            )}
-          </button>
-
-          {!user ? (
-            <div className="flex items-center gap-3">
-              <Link to="/login" className="text-sm uppercase tracking-widest px-3 py-2 hover:text-gold transition-colors">Login</Link>
-              <Link to="/signup" className="text-sm uppercase tracking-widest px-3 py-2 bg-primary text-white rounded hover:bg-gold transition-colors">Sign Up</Link>
-            </div>
-          ) : (
-            <div className="group relative">
-              <Link to="/account" className="hover:text-gold transition-colors block">
-                <User size={18} strokeWidth={1.5} />
-              </Link>
-              {user && (
-                <div className="absolute top-full right-0 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                  <div className="bg-bg border border-accent p-4 w-48 shadow-xl space-y-3">
-                    <div className="pb-2 border-b border-accent">
-                      <p className="text-[10px] uppercase tracking-widest font-bold truncate">{user.displayName || 'Account'}</p>
-                      <p className="text-[8px] text-muted truncate">{user.email}</p>
+                      </ul>
                     </div>
-                    <ul className="space-y-2">
-                      {isAdmin && (
-                        <li><Link to="/admin" className="text-[10px] uppercase tracking-widest text-gold font-bold hover:text-primary block">Admin Panel</Link></li>
-                      )}
-                      <li><Link to="/account" className="text-[10px] uppercase tracking-widest hover:text-gold block">Profile</Link></li>
-                      <li><Link to="/orders" className="text-[10px] uppercase tracking-widest hover:text-gold block">Orders</Link></li>
-                      <li>
-                        <button
-                          onClick={() => logout()}
-                          className="text-[10px] uppercase tracking-widest text-red-500 hover:text-red-600 block w-full text-left"
-                        >
-                          Logout
-                        </button>
-                      </li>
-                    </ul>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-
-
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </header>
 
       {/* Mobile Menu Drawer */}
       <AnimatePresence>
@@ -245,31 +244,104 @@ const Header = () => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-full w-[80%] max-w-sm bg-bg z-[70] p-8"
+              className="fixed top-0 left-0 h-full w-[80%] max-w-sm bg-[#FAFAF8] z-[70] p-8 flex flex-col justify-between shadow-2xl"
             >
-              <div className="flex justify-between items-center mb-12">
-                <h2 className="text-xl tracking-widest uppercase font-light">Menu</h2>
-                <button onClick={() => setIsMobileMenuOpen(false)}>
-                  <X size={24} strokeWidth={1.5} />
-                </button>
+              <div>
+                <div className="flex justify-between items-center mb-12">
+                  <h2 className="text-xl tracking-widest uppercase font-light">Menu</h2>
+                  <button onClick={() => setIsMobileMenuOpen(false)}>
+                    <X size={24} strokeWidth={1.5} />
+                  </button>
+                </div>
+                <nav className="flex flex-col gap-6">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-lg uppercase tracking-widest font-light border-b border-accent pb-2 hover:text-gold transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+                </nav>
               </div>
-              <nav className="flex flex-col gap-6">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-lg uppercase tracking-widest font-light border-b border-accent pb-2"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-              </nav>
+
+              {/* Mobile Drawer Auth/Profile Links */}
+              <div className="border-t border-accent pt-6 mt-auto space-y-4">
+                {!user ? (
+                  <div className="flex flex-col gap-3">
+                    <Link 
+                      to="/login" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full text-center text-xs uppercase tracking-widest border border-primary py-4 hover:bg-primary hover:text-white transition-all font-bold"
+                    >
+                      Login
+                    </Link>
+                    <Link 
+                      to="/signup" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full text-center text-xs uppercase tracking-widest bg-primary text-white py-4 hover:bg-gold transition-all font-bold"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="pb-2 border-b border-accent">
+                      <p className="text-xs uppercase tracking-widest font-bold text-gold">Hello, {user.displayName || 'Account'}</p>
+                      <p className="text-[10px] text-muted truncate">{user.email}</p>
+                    </div>
+                    <ul className="space-y-3">
+                      {isAdmin && (
+                        <li>
+                          <Link 
+                            to="/admin" 
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="text-xs uppercase tracking-widest text-gold font-bold hover:text-primary block"
+                          >
+                            Admin Panel
+                          </Link>
+                        </li>
+                      )}
+                      <li>
+                        <Link 
+                          to="/account" 
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="text-xs uppercase tracking-widest hover:text-gold block"
+                        >
+                          Profile
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/orders" 
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="text-xs uppercase tracking-widest hover:text-gold block"
+                        >
+                          Orders
+                        </Link>
+                      </li>
+                      <li>
+                        <button
+                          onClick={() => {
+                            logout();
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="text-xs uppercase tracking-widest text-red-500 hover:text-red-600 block w-full text-left font-bold"
+                        >
+                          Logout
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 };
 

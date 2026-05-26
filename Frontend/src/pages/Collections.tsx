@@ -18,6 +18,7 @@ const Collections = () => {
   const [sortBy, setSortBy] = useState('featured');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const { data: products = [], isLoading: loading } = useProducts();
 
   const filteredProducts = useMemo(() => {
@@ -107,7 +108,13 @@ const Collections = () => {
 
         {/* Controls */}
         <div className="flex justify-between items-center border-y border-accent py-6 mb-12">
-          <div />
+          <button 
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className="lg:hidden flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold border border-accent px-4 py-2 hover:bg-primary hover:text-white transition-colors"
+          >
+            Filters {showMobileFilters ? '(-)' : '(+)'}
+          </button>
+          <div className="hidden lg:block" />
           <div className="flex items-center gap-4">
             <span className="text-[10px] uppercase tracking-widest font-bold text-muted">{filteredProducts.length} Products</span>
             <div className="relative group">
@@ -133,7 +140,7 @@ const Collections = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Filters */}
-          <aside className="lg:col-span-3 bg-bg p-6 border border-accent rounded">
+          <aside className={`lg:col-span-3 bg-bg p-6 border border-accent rounded transition-all duration-300 ${showMobileFilters ? "block" : "hidden lg:block"}`}>
             <h2 className="text-sm uppercase tracking-[0.2em] font-bold mb-6">Filters</h2>
             <div className="space-y-12">
               <div>
